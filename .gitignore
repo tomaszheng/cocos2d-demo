@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+# Cocos2d-x
+frameworks/
+frameworks/cocos2d-x
+frameworks/runtime-src
+
+# Simulator
+simulator/
