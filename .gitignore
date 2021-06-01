@@ -38,3 +38,6 @@ frameworks/runtime-src
 
 # Simulator
 simulator/
+
+# Settings
+.idea
