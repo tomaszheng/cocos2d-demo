@@ -12,6 +12,8 @@ local EXPORTED_METHODS = {
     "dumpAllEventListeners",
 }
 
+local EVENT_DEBUG = 0
+
 function Event:init_()
     self.target_ = nil
     self.listeners_ = {}
@@ -42,12 +44,12 @@ function Event:on(eventName, listener, tag)
     tag = tag or ""
     self.listeners_[eventName][handle] = {listener, tag}
 
-    if DEBUG > 1 then
+    if EVENT_DEBUG > 1 then
         printInfo("%s [Event] addEventListener() - event: %s, handle: %s, tag: \"%s\"",
                   tostring(self.target_), eventName, handle, tostring(tag))
     end
 
-    return self.target_, handle
+    return handle
 end
 
 Event.addEventListener = Event.on
@@ -55,7 +57,7 @@ Event.addEventListener = Event.on
 function Event:dispatchEvent(event)
     event.name = string.upper(tostring(event.name))
     local eventName = event.name
-    if DEBUG > 1 then
+    if EVENT_DEBUG > 1 then
         printInfo("%s [Event] dispatchEvent() - event %s", tostring(self.target_), eventName)
     end
 
@@ -67,7 +69,7 @@ function Event:dispatchEvent(event)
     end
 
     for handle, listener in pairs(self.listeners_[eventName]) do
-        if DEBUG > 1 then
+        if EVENT_DEBUG > 1 then
             printInfo("%s [Event] dispatchEvent() - dispatching event %s to listener %s", tostring(self.target_), eventName, handle)
         end
         -- listener[1] = listener
@@ -75,7 +77,7 @@ function Event:dispatchEvent(event)
         event.tag = listener[2]
         listener[1](event)
         if event.stop_ then
-            if DEBUG > 1 then
+            if EVENT_DEBUG > 1 then
                 printInfo("%s [Event] dispatchEvent() - break dispatching for event %s", tostring(self.target_), eventName)
             end
             break
@@ -90,7 +92,7 @@ function Event:removeEventListener(handleToRemove)
         for handle, _ in pairs(listenersForEvent) do
             if handle == handleToRemove then
                 listenersForEvent[handle] = nil
-                if DEBUG > 1 then
+                if EVENT_DEBUG > 1 then
                     printInfo("%s [Event] removeEventListener() - remove listener [%s] for event %s", tostring(self.target_), handle, eventName)
                 end
                 return self.target_
@@ -108,7 +110,7 @@ function Event:removeEventListenersByTag(tagToRemove)
             -- listener[2] = tag
             if listener[2] == tagToRemove then
                 listenersForEvent[handle] = nil
-                if DEBUG > 1 then
+                if EVENT_DEBUG > 1 then
                     printInfo("%s [Event] removeEventListener() - remove listener [%s] for event %s", tostring(self.target_), handle, eventName)
                 end
             end
@@ -120,7 +122,7 @@ end
 
 function Event:removeEventListenersByEvent(eventName)
     self.listeners_[string.upper(eventName)] = nil
-    if DEBUG > 1 then
+    if EVENT_DEBUG > 1 then
         printInfo("%s [Event] removeAllEventListenersForEvent() - remove all listeners for event %s", tostring(self.target_), eventName)
     end
     return self.target_
@@ -128,7 +130,7 @@ end
 
 function Event:removeAllEventListeners()
     self.listeners_ = {}
-    if DEBUG > 1 then
+    if EVENT_DEBUG > 1 then
         printInfo("%s [Event] removeAllEventListeners() - remove all listeners", tostring(self.target_))
     end
     return self.target_
