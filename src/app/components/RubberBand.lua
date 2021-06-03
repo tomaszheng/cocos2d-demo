@@ -90,43 +90,52 @@ end
 
 function RubberBand:onTouchMoved(touch)
     local position = self:convertToNodeSpace(touch:getLocation())
-    self.stretchPoint = position
-    self:stretch(position)
+    if self:isValidTouchPosition(position) then
+        self.stretchPoint = position
+        self:stretch(position, true)
+    end
+end
+
+function RubberBand:isValidTouchPosition(position)
+    local distance1 = cc.pGetDistance(self.startPoint, position)
+    local distance2 = cc.pGetDistance(self.endPoint, position)
+    return distance1 > FINGER_WIDTH and distance2 > FINGER_WIDTH
 end
 
 function RubberBand:onTouchEnded()
     self:bounce()
 end
 
-function RubberBand:stretch(point)
-    self.graphics:clear()
-
+function RubberBand:stretch(point, isFromTouchEnded)
     local tangency1 = self:getTangencyOfStartPoint(point)
     local tangency2 = self:getTangencyOfEndPoint(point)
 
-    --self.graphics:drawCircle(point, FINGER_WIDTH, 0, 50, false, 1, 1, cc.c4f(0, 1, 0, 1))
+    local xAxios = cc.p(1, 0)
+    local normal1 = cc.pNormalize(cc.pSub(tangency1, point))
+    local normal2 = cc.pNormalize(cc.pSub(tangency2, point))
+    local startRad = math.acos(cc.pDot(normal1, xAxios))
+    local endRad = math.acos(cc.pDot(normal2, xAxios))
 
-    local a = cc.pNormalize(cc.pSub(tangency1, point))
-    local b = cc.pNormalize(cc.pSub(tangency2, point))
-    local startRad = math.acos(cc.pDot(a, cc.p(1, 0)))
-    local totalRad = math.acos(cc.pDot(a, b))
-
-    
-
-    if math.abs(totalRad) < 0.000001 then 
-        totalRad = GeometryConstants.PI
+    if cc.pCross(normal1, xAxios) > 0 then
+        startRad = 2 * GeometryConstants.PI - startRad
     end
-    --print("totalRad: ", totalRad)
+    if cc.pCross(normal2, xAxios) > 0 then
+        endRad = 2 * GeometryConstants.PI - endRad
+    end
 
-    --self.graphics:drawArc(point, FINGER_WIDTH, startRad, totalRad)
+    local totalRad = endRad - startRad
+    if cc.pCross(cc.pSub(tangency1, self.startPoint), cc.pSub(tangency2, self.startPoint)) < 0 then
+        if endRad > startRad then
+            totalRad = totalRad - 2 * GeometryConstants.PI
+        end
+    else
+        totalRad = (2 * GeometryConstants.PI + totalRad) % (2 * GeometryConstants.PI)
+    end
 
-    -- self.graphics:drawPoint(tangency1, 5, cc.c4f(1, 0, 1, 1))
-
-    --self.graphics:drawSegment(self.startPoint, tangency1)
-    --self.graphics:drawSegment(self.endPoint, tangency2)
-
-    self.graphics:drawSegment(self.startPoint, point)
-    self.graphics:drawSegment(self.endPoint, point)
+    self.graphics:clear()
+    self.graphics:drawArc(point, FINGER_WIDTH, startRad, totalRad)
+    self.graphics:drawSegment(self.startPoint, tangency1)
+    self.graphics:drawSegment(self.endPoint, tangency2)
 end
 
 function RubberBand:getTangencyOfStartPoint(centerPoint)

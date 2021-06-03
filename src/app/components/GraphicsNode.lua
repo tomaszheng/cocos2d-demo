@@ -43,8 +43,8 @@ function GraphicsNode:drawArc(centerP, radius, startRad, totalRad)
     for i = 1, n + 1 do
         local t = startRad + rad * (i - 1)
         local p = cc.p(
-                math.abs(math.cos(t)) * radius + centerP.x,
-                math.abs(math.sin(t)) * radius + centerP.y
+                math.cos(t) * radius + centerP.x,
+                math.sin(t) * radius + centerP.y
         )
         table.insert(points, p)
     end
