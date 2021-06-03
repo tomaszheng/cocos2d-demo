@@ -43,5 +43,7 @@ function Node:addTouchEvent(onBegan, onMoved, onEnded, onCanceled)
 end
 
 function Node:removeTouchEvent()
-    self:getEventDispatcher():removeEventListener(touchListener)
+    if touchListener then
+        self:getEventDispatcher():removeEventListener(touchListener)
+    end
 end

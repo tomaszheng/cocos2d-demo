@@ -3,7 +3,7 @@
 --- Created by tomas.
 --- DateTime: 2021/6/1 17:53
 ---
-require 'app.framework.extend.NodeEx'
+require 'app.framework.extend.YNodeEx'
 
 eventManager = cc.load("event").new():bind({})
 
