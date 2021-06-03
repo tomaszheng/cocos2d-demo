@@ -5,6 +5,8 @@
 ---
 local GeometryConstants = {}
 
+GeometryConstants.PI = 2 * math.asin(1.0)
+
 GeometryConstants.SHAPE = {
     UNKNOWN     = 0,
     POINT       = 1,

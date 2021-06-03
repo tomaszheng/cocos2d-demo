@@ -5,8 +5,6 @@
 ---
 local GraphicsNode = class('GraphicsNode', cc.DrawNode)
 
-local PI = 2 * math.asin(1.0)
-
 function GraphicsNode:ctor(data)
     self:initData(data)
 end
@@ -40,7 +38,7 @@ end
 
 function GraphicsNode:drawArc(centerP, radius, startRad, totalRad)
     local points = {}
-    local n = math.max(math.ceil(math.abs(totalRad) * 50 / (2 * PI)), 1)
+    local n = math.max(math.ceil(math.abs(totalRad) * 50 / (2 * GeometryConstants.PI)), 1)
     local rad = totalRad / n
     for i = 1, n + 1 do
         local t = startRad + rad * (i - 1)
