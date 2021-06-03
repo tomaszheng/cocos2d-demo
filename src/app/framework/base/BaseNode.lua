@@ -15,21 +15,6 @@ function BaseNode:onExit(...)
     self:removeAllGlobalListeners()
 end
 
-function BaseNode:delayAction(call, delay)
-    return self:runAction(cc.Sequence:create(
-            cc.DelayTime:create(delay or 0),
-            cc.CallFunc:create(function()
-                doCallback(call)
-            end)))
-end
-
-function BaseNode:repeatAction(call, duration)
-    return self:runAction(cc.RepeatForever:create(cc.Sequence:create(
-            cc.CallFunc:create(call),
-            cc.DelayTime:create(duration)
-    )))
-end
-
 function BaseNode:addGlobalListener(eventName, callback)
     local handle = eventManager:addEventListener(eventName, callback)
     table.insert(self._globalListeners, handle)
