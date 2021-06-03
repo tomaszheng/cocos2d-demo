@@ -56,13 +56,7 @@ end
 function GraphicsNode:drawSegments(points, lineWidth, lineColor)
     local n = #points
     for i = 1, n - 1 do
-        local lineColor2 = lineColor
-        local lineWidth2 = lineWidth
-        if i == 1 then
-            lineWidth2 = 5
-            lineColor2 = cc.c4f(1, 0, 0, 1)
-        end
-        self:drawSegment(points[i], points[i + 1], lineWidth2, lineColor2)
+        self:drawSegment(points[i], points[i + 1], lineWidth, lineColor)
     end
 end
 

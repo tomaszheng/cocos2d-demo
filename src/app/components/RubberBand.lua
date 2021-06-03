@@ -24,7 +24,9 @@ function RubberBand:ctor(data)
 end
 
 function RubberBand:initData(data)
-    self.position = cc.pMul(cc.pAdd(data.endPos, data.startPos), 0.5)
+    self:initEllipseData(data)
+    self:initUIData(data)
+
     self.stretchPoint = cc.p(0, 0)
     self.isHoming = false
     self.bounceEnabled = false
@@ -33,20 +35,33 @@ function RubberBand:initData(data)
     self.minAmplitude = 1
     self.amplitudeAttenuation = AMPLITUDE_MAX_ATTENUATION
     self.graphics = nil
-
-    self:initEllipseData(data)
 end
 
 function RubberBand:initEllipseData(data)
     local startPos, endPos = data.startPos, data.endPos
-    local centerPos = cc.pMul(cc.pAdd(endPos, startPos), 0.5)
-    self.centerPoint = cc.p(0, 0)
-    self.startPoint = cc.pSub(startPos, centerPos)
-    self.endPoint = cc.pSub(endPos, centerPos)
-    self.a = cc.pGetDistance(self.startPoint, self.endPoint) / 2
+    local distance = cc.pGetDistance(startPos, endPos)
+    self.startPoint = cc.p(0, 0)
+    self.endPoint = cc.p(distance, 0)
+    self.centerPoint = cc.p(distance / 2, 0)
+    self.a = distance / 2
     self.currB = 0
     self.startRad = -PI / 2
     self.endRad = PI / 2
+end
+
+function RubberBand:initUIData(data)
+    local startPos, endPos = data.startPos, data.endPos
+    if startPos.x > endPos.x then
+        startPos, endPos = endPos, startPos
+    end
+    self.position = cc.pMul(cc.pAdd(endPos, startPos), 0.5)
+    local normal = cc.pNormalize(cc.pSub(endPos, startPos))
+    local xAxios = cc.p(1, 0)
+    local rad = math.acos(cc.pDot(normal, xAxios))
+    self.rotation = rad * 180 / PI
+    if cc.pCross(normal, xAxios) < 0 then
+        self.rotation = -self.rotation
+    end
 end
 
 function RubberBand:initUI()
@@ -59,6 +74,7 @@ function RubberBand:initUI()
 
     self:setContentSize(cc.size(absX, absY))
     self:move(self.position)
+    self:setRotation(self.rotation)
 end
 
 function RubberBand:initListeners()
