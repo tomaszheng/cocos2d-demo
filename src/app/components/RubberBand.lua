@@ -5,7 +5,7 @@
 ---
 local RubberBand = class("RubberBand", BaseNode)
 
-local PI = math.asin(1.0)
+local PI = 2 * math.asin(1.0)
 local BOUNCE_SPEED = 25
 local HOMING_DURATION = 0.1
 local AMPLITUDE_MAX_ATTENUATION = 4
@@ -13,7 +13,7 @@ local AMPLITUDE_MIN_ATTENUATION = 1.5
 local AMPLITUDE_ATTENUATION_SPEED = 0.3
 local FINGER_WIDTH = 20
 local TOUCH_RADIUS = 5
-local MAX_BOUNCE_RAD = math.tan(20 * PI / 180)
+local MAX_BOUNCE_RAD = math.tan(10 * PI / 180)
 
 function RubberBand:ctor(data)
     RubberBand.super.ctor(self, data)
@@ -45,8 +45,8 @@ function RubberBand:initEllipseData(data)
     self.endPoint = cc.pSub(endPos, centerPos)
     self.a = cc.pGetDistance(self.startPoint, self.endPoint) / 2
     self.currB = 0
-    self.startRad = -PI
-    self.endRad = PI
+    self.startRad = -PI / 2
+    self.endRad = PI / 2
 end
 
 function RubberBand:initUI()
@@ -195,9 +195,9 @@ end
 
 function RubberBand:adjustRadRange()
     if self.currB > 0 then
-        self.startRad, self.endRad = -PI, PI
+        self.startRad, self.endRad = -PI / 2, PI / 2
     else
-        self.startRad, self.endRad = PI, PI * 3
+        self.startRad, self.endRad = PI / 2, PI * 3 / 2
     end
 end
 
