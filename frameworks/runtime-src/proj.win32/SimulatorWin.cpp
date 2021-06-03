@@ -239,6 +239,10 @@ int SimulatorWin::run()
             _project.setProjectDir(args.at(1));
             _project.setDebuggerType(kCCRuntimeDebuggerCodeIDE);
         }
+		else
+		{
+			_project.setProjectDir(getApplicationPath() + "/../../");
+		}
     }
 
     // create the application instance
@@ -610,6 +614,10 @@ void SimulatorWin::parseCocosProjectConfig(ProjectConfig &config)
 
         tmpConfig.parseCommandLine(args);
     }
+	else if (args.size() == 1)
+	{
+		tmpConfig.setProjectDir(getApplicationPath() + "/../../");
+	}
 
     // set project directory as search root path
     FileUtils::getInstance()->setDefaultResourceRootPath(tmpConfig.getProjectDir().c_str());

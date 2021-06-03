@@ -56,7 +56,6 @@ if nil ~= sp then
     require "cocos.spine.SpineConstants"
 end
 
-require "cocos.cocos2d.deprecated"
 require "cocos.cocos2d.DrawPrimitives"
 
 -- Lua extensions

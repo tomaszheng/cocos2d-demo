@@ -330,7 +330,7 @@ function cc.convertColor(input, typ)
                 ret.a = input.a / 255
             end
         else
-            ret.a = 255
+            ret.a = 1
         end
     else
         error(string.format("cc.convertColor() - invalid type %s", typ), 0)
