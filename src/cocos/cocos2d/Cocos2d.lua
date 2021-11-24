@@ -376,7 +376,7 @@ function cc.vertex2F(_x,_y)
 end
 
 --Vertex3F
-function cc.Vertex3F(_x,_y,_z)
+function cc.vertex3F(_x,_y,_z)
     return { x = _x, y = _y, z = _z }
 end
 

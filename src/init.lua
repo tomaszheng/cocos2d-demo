@@ -7,17 +7,29 @@
 require "src.config"
 require "src.cocos.init"
 
+-- extends
+require("src.extends.io")
+require("src.extends.math")
+require("src.extends.string")
+require("src.extends.table")
+
 -- base
 Singleton = require("src.base.Singleton")
 BaseNode = require("src.base.BaseNode")
 BaseScene = require("src.base.BaseScene")
+BaseComponent = require("src.base.BaseComponent")
 
 -- managers
 eventManager = require("src.managers.eventManager")
 
+-- utils
 GeometryConstants = require 'src.utils.geometry.GeometryConstants'
 IntersectionUtils = require 'src.utils.geometry.IntersectionUtils'
 
+-- components
+Outline = require("src.components.shaders.Outline")
+
+-- widgets
 GraphicsNode = require 'src.widgets.GraphicsNode'
 RubberBand = require 'src.widgets.RubberBand'
 
