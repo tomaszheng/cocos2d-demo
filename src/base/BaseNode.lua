@@ -25,6 +25,7 @@ function BaseNode:removeAllGlobalListeners()
     table.walk(self._globalListeners, function(handle)
         eventManager:removeEventListener(handle)
     end)
+    self._globalListeners = {}
 end
 
 return BaseNode

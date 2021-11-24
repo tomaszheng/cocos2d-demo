@@ -1,7 +1,7 @@
 
-local MainScene = class("MainScene", cc.load("mvc").ViewBase)
+local MainScene = class("MainScene", BaseScene)
 
-function MainScene:onCreate()
+function MainScene:ctor()
     -- add background image
     display.newSprite("HelloWorld.png")
         :move(display.center)
@@ -13,10 +13,9 @@ function MainScene:onCreate()
         :addTo(self)
 
     local rubber = RubberBand.new({
-        startPos = cc.p(800, 500),
-        endPos = cc.p(1500, 500)
+        startPos = cc.p(600, 100),
+        endPos = cc.p(900, 500)
     }):addTo(self)
-    rubber:bounce()
 end
 
 return MainScene

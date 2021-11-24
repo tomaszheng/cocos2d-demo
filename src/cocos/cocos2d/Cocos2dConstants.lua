@@ -317,6 +317,11 @@ cc.LabelEffect =
     OUTLINE = 1,
     SHADOW  = 2,
     GLOW    = 3,
+    ITALICS = 4,
+    BOLD = 5,
+    UNDERLINE = 6,
+    STRIKETHROUGH = 7,
+    ALL = 8,
 }
 
 cc.LabelOverflow =
@@ -324,8 +329,8 @@ cc.LabelOverflow =
     NONE = 0,
     CLAMP = 1,
     SHRINK = 2,
-    RESIZE_HEIGHT = 3
-};
+    RESIZE_HEIGHT = 3,
+}
 
 cc.KeyCodeKey =
 {

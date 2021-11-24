@@ -22,51 +22,45 @@ THE SOFTWARE.
 
 ]]
 
-require "cocos.cocos2d.Cocos2d"
-require "cocos.cocos2d.Cocos2dConstants"
-require "cocos.cocos2d.functions"
-
-__G__TRACKBACK__ = function(msg)
-    local msg = debug.traceback(msg, 3)
-    print(msg)
-    return msg
-end
+require "src.cocos.cocos2d.Cocos2d"
+require "src.cocos.cocos2d.Cocos2dConstants"
+require "src.cocos.cocos2d.functions"
 
 -- opengl
-require "cocos.cocos2d.Opengl"
-require "cocos.cocos2d.OpenglConstants"
+require "src.cocos.cocos2d.Opengl"
+require "src.cocos.cocos2d.OpenglConstants"
 -- audio
-require "cocos.cocosdenshion.AudioEngine"
+require "src.cocos.cocosdenshion.AudioEngine"
 -- cocosstudio
 if nil ~= ccs then
-    require "cocos.cocostudio.CocoStudio"
+    require "src.cocos.cocostudio.CocoStudio"
 end
 -- ui
 if nil ~= ccui then
-    require "cocos.ui.GuiConstants"
-    require "cocos.ui.experimentalUIConstants"
+    require "src.cocos.ui.GuiConstants"
+    require "src.cocos.ui.experimentalUIConstants"
 end
 
 -- extensions
-require "cocos.extension.ExtensionConstants"
+require "src.cocos.extension.ExtensionConstants"
 -- network
-require "cocos.network.NetworkConstants"
+require "src.cocos.network.NetworkConstants"
 -- Spine
 if nil ~= sp then
-    require "cocos.spine.SpineConstants"
+    require "src.cocos.spine.SpineConstants"
 end
 
-require "cocos.cocos2d.DrawPrimitives"
+require "src.cocos.cocos2d.DrawPrimitives"
 
 -- Lua extensions
 require "cocos.cocos2d.bitExtend"
 
 -- cocosbuilder
-require "cocos.cocosbuilder.CCBReaderLoad"
+require "src.cocos.cocosbuilder.CCBReaderLoad"
 
 -- physics3d
-require "cocos.physics3d.physics3d-constants"
+require "src.cocos.physics3d.physics3d-constants"
 
 if CC_USE_FRAMEWORK then
-    require "cocos.framework.init"
+    require "src.cocos.framework.init"
 end

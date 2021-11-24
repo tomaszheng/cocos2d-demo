@@ -75,6 +75,86 @@ function Node:move(x, y)
     return self
 end
 
+function Node:moveX(x)
+    self:setPositionX(x)
+    return self
+end
+
+function Node:moveY(y)
+    self:setPositionY(y)
+    return self
+end
+
+function Node:x()
+    return self:getPositionX()
+end
+
+function Node:y()
+    return self:getPositionY()
+end
+
+function Node:moveOffset(x, y)
+    self:moveOffsetX(x)
+    self:moveOffsetY(y)
+    return self
+end
+
+function Node:moveOffsetX(x)
+    self:setPositionX(self:getPositionX() + x)
+    return self
+end
+
+function Node:moveOffsetY(y)
+    self:setPositionY(self:getPositionY() + y)
+    return self
+end
+
+function Node:moveCenter(parent)
+    if not parent then
+        parent = self:getParent()
+    end
+    self:move(parent:getContentSize().width / 2, parent:getContentSize().height / 2)
+    return self
+end
+
+function Node:getCascadeScale()
+    local scale, node = 1, self
+    while node do
+        scale = scale * node:getScale()
+        node = node:getParent()
+    end
+    return scale
+end
+
+function Node:getWorldPosition()
+    return self:getParent():convertToWorldSpace(self:getPosition())
+end
+
+function Node:getSize()
+    return self:getContentSize()
+end
+
+function Node:getRealSize()
+    local size = self:getSize()
+    return cc.size(size.width * self:getScaleX(), size.height * self:getScaleY())
+end
+
+function Node:getHeight()
+    return self:getContentSize().height
+end
+
+function Node:getWidth()
+    return self:getContentSize().width
+end
+
+function Node:setWidth(w)
+    self:setContentSize(cc.size(w, self:getHeight()))
+end
+
+function Node:setHeight(h)
+    self:setContentSize(cc.size(self:getWidth(), h))
+end
+
 function Node:moveTo(args)
     transition.moveTo(self, args)
     return self
@@ -125,6 +205,36 @@ function Node:onUpdate(callback)
     return self
 end
 
+function Node:getBoundingBoxToWorld()
+    local size, anchor = self:getContentSize() , self:getAnchorPoint()
+    local scale = self:getNodeToWorldTransform()[1]
+    local x = self:getPositionX() - size.width * anchor.x
+    local y = self:getPositionY() - size.height * anchor.y
+    local position = self:getParent():convertToWorldSpace(cc.p(x, y))
+    return cc.rect(position.x, position.y, size.width * scale, size.height * scale)
+end
+
+function Node:delayAction(callback, delay)
+    self:runAction(cc.Sequence:create(cc.DelayTime:create(delay or 0), cc.CallFunc:create(function()
+        doCallback(callback)
+    end)))
+end
+
+function Node:repeatAction(callback, delay, num)
+    if num and type(num) == "number" then
+        self:runAction(cc.Repeat:create(cc.Sequence:create(
+                cc.CallFunc:create(function()
+                    num = num - 1
+                    doCallback(callback, num)
+                end), cc.DelayTime:create(delay)
+        )), num)
+    else
+        self:runAction(cc.RepeatForever:create(cc.Sequence:create(
+                cc.CallFunc:create(callback), cc.DelayTime:create(delay)
+        )))
+    end
+end
+
 Node.scheduleUpdate = Node.onUpdate
 
 function Node:onNodeEvent(eventName, callback)
@@ -171,7 +281,6 @@ function Node:disableNodeEvents()
     return self
 end
 
-
 function Node:onEnter()
 end
 
@@ -197,6 +306,7 @@ end
 
 function Node:onExit_()
     self:onExit()
+    self:removeAllLuaComponents()
     if not self.onExitCallback_ then
         return
     end
@@ -225,4 +335,109 @@ function Node:onCleanup_()
         return
     end
     self:onCleanupCallback_()
+end
+
+function Node:addTouchEvent(funcBegan, funcMoved, funcEnded, funcCancelled)
+    local listener = cc.EventListenerTouchOneByOne:create();
+    if funcBegan then
+        listener:registerScriptHandler(funcBegan, cc.Handler.EVENT_TOUCH_BEGAN);
+    end
+
+    funcMoved = funcMoved or funcBegan
+    if funcMoved then
+        listener:registerScriptHandler(funcMoved, cc.Handler.EVENT_TOUCH_MOVED);
+    end
+
+    funcEnded = funcEnded or funcBegan
+    if funcEnded then
+        listener:registerScriptHandler(funcEnded, cc.Handler.EVENT_TOUCH_ENDED);
+    end
+
+    funcCancelled = funcCancelled or funcBegan
+    if funcCancelled then
+        listener:registerScriptHandler(funcCancelled, cc.Handler.EVENT_TOUCH_CANCELLED);
+    end
+
+    local eventDispatcher = self:getEventDispatcher();
+    if self.__listener__  and type(self.__listener__) == "userdata" then
+        eventDispatcher:removeEventListener(self.__listener__)
+        self.__listener__ = nil
+    end
+    eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self);
+    self.__listener__ = listener
+    return listener
+end
+
+--@summary 移除node上的EventListener
+--@summary 增加EventListener之前先把以前绑定的EventListener取消注册
+function Node:removeTouchEvent()
+    local eventDispatcher = self:getEventDispatcher();
+    local listener = self.__listener__
+    if listener  and type(listener) == "userdata" then
+        eventDispatcher:removeEventListener(listener)
+        self.__listener__ = nil
+    end
+    
+end
+function Node:isAncestorsVisible()
+    local node = self
+    while (node) do
+        if not node:isVisible() then
+            return false
+        end
+        node = self:getParent()
+    end
+    return true
+end
+
+---添加组件
+---@param component component
+function Node:addLuaComponent(component, data)
+    self._luaComponents = self._luaComponents or {}
+    local cname = component.__cname
+    if not self._luaComponents[cname] then
+        self._luaComponents[cname] = component.new(self, data)
+        self:enableNodeEvents()
+    end
+    return self._luaComponents[cname]
+end
+
+---获取组件
+---@param component component
+---@return component
+function Node:getLuaComponent(component)
+    self._luaComponents = self._luaComponents or {}
+    local cname = type(component) == "string" and component or component.__cname
+    if self._luaComponents[cname] then
+        return self._luaComponents[cname]
+    else
+        -- 用基类可以获取子类
+        for _, value in pairs(self._luaComponents) do
+            if iskindof(rawget(value, "class"), cname) then
+                return value
+            end
+        end
+    end
+    return self._luaComponents[cname]
+end
+
+---移除组件
+---@param component component
+function Node:removeLuaComponent(component)
+    self._luaComponents = self._luaComponents or {}
+    local cname = type(component) == "string" and component or component.__cname
+    if self._luaComponents[cname] then
+        self._luaComponents[cname]:destroy()
+        self._luaComponents[cname] = nil
+    end
+end
+
+function Node:removeAllLuaComponents()
+    self._luaComponents = self._luaComponents or {}
+    if type(self._luaComponents) == "table" then
+        for _, component in pairs(self._luaComponents) do
+            component:destroy()
+        end
+        self._luaComponents = {}
+    end
 end

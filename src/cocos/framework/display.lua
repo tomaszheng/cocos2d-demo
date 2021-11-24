@@ -139,6 +139,7 @@ local function setConstants()
 end
 
 function display.setAutoScale(configs)
+    framesize = view:getFrameSize()
     if type(configs) ~= "table" then return end
 
     checkResolution(configs)
@@ -537,6 +538,10 @@ end
 function display.removeUnusedSpriteFrames()
     spriteFrameCache:removeUnusedSpriteFrames()
     textureCache:removeUnusedTextures()
+end
+
+function display.getCachedTextureInfo()
+    return textureCache:getCachedTextureInfo()
 end
 
 return display

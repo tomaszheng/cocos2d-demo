@@ -195,6 +195,38 @@ function cc.size( _width,_height )
     return { width = _width, height = _height }
 end
 
+function cc.sizeAdd(size, ...)
+    local x, y = 0, 0
+    if select("#", ...) == 1 then
+        local factor = ...
+        if factor.x then
+            x, y = factor.x, factor.y
+        elseif factor.width then
+            x, y = factor.width, factor.height
+        end
+    else
+        x, y = ...
+    end
+    return {width = size.width + x, height = size.height + y}
+end
+
+function cc.sizeMul(size, ...)
+    local x, y = 1, 1
+    if select("#", ...) == 1 then
+        local factor = ...
+        if type(factor) == "number" then
+            x, y = factor, factor
+        elseif factor.x then
+            x, y = factor.x, factor.y
+        elseif factor.width then
+            x, y = factor.width, factor.height
+        end
+    else
+        x, y = ...
+    end
+    return {width = size.width * x, height = size.height * y}
+end
+
 --Rect
 function cc.rect(_x,_y,_width,_height)
     return { x = _x, y = _y, width = _width, height = _height }
@@ -310,7 +342,7 @@ function cc.convertColor(input, typ)
         end
         if input.a then
             if math.ceil(input.a) ~= input.a or input.a <= 1 then
-                ret.a = input.a * 255
+                ret.a = math.ceil(input.a * 255)
             else
                 ret.a = input.a
             end

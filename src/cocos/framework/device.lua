@@ -71,6 +71,8 @@ elseif language_ == cc.LANGUAGE_GERMAN then
     language_ = "gr"
 elseif language_ == cc.LANGUAGE_SPANISH then
     language_ = "sp"
+elseif language_ == cc.LANGUAGE_DUTCH then
+    language_ = "du"
 elseif language_ == cc.LANGUAGE_RUSSIAN then
     language_ = "ru"
 elseif language_ == cc.LANGUAGE_KOREAN then
@@ -83,6 +85,18 @@ elseif language_ == cc.LANGUAGE_PORTUGUESE then
     language_ = "pt"
 elseif language_ == cc.LANGUAGE_ARABIC then
     language_ = "ar"
+elseif language_ == cc.LANGUAGE_NORWEGIAN then
+    language_ = "ln"
+elseif language_ == cc.LANGUAGE_POLISH then
+    language_ = "la"
+elseif language_ == cc.LANGUAGE_TURKISH then
+    language_ = "tr"
+elseif language_ == cc.LANGUAGE_UKRAINIAN then
+    language_ = "uk"
+elseif language_ == cc.LANGUAGE_ROMANIAN then
+    language_ = "ro"
+elseif language_ == cc.LANGUAGE_BULGARIAN then
+    language_ = "bu"
 else
     language_ = "en"
 end

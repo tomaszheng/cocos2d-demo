@@ -1,12 +1,16 @@
+function __G__TRACKBACK__(msg)
+    print('----------------------------------------')
+    print('LUA ERROR: ' .. tostring(msg) .. '\n')
+    print(debug.traceback())
+    print('----------------------------------------')
+end
 
 cc.FileUtils:getInstance():setPopupNotify(false)
 
-require "config"
-require "cocos.init"
-require "app.init"
-
 local function main()
-    require("app.MyApp"):create():run()
+    require("src.init")
+
+    display.runScene(require("src.views.MainScene").new())
 end
 
 local status, msg = xpcall(main, __G__TRACKBACK__)
