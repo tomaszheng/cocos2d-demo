@@ -22,21 +22,26 @@ float rand(vec2 p) {
 //    return fract(sin(q) * 43758.5453);
 //}
 
-void frosted(out vec4 tex) {
+#if BLUR_TYPE == 1
+void blur(out vec4 tex) {
     float deg = 360. / SAMPLE_NUM;
     for (int i = 0; i < SAMPLE_NUM; i++) {
-        vec2 q = vec2(cos(degrees(deg * i)), sin(degrees(deg * i))) * (rand(vec2(i, v_texCoord.x + v_texCoord.y)) + u_blur);
+        float c = cos(degrees(deg * i));
+        float s = sin(degrees(deg * i));
+        vec2 q = vec2(c, s) * (rand(vec2(i, v_texCoord.x + v_texCoord.y)) + u_blur);
         vec2 uv = v_texCoord + (q * u_blur);
         tex += texture2D(CC_Texture0, uv).rgba / 2.;
 
-        q = vec2(cos(degrees(deg * i)), sin(degrees(deg * i))) * (rand(vec2(i, v_texCoord.x + v_texCoord.y + 24.)) + u_blur);
+        q = vec2(c, s) * (rand(vec2(i, v_texCoord.x + v_texCoord.y + 24.)) + u_blur);
         uv = v_texCoord + (q * u_blur);
         tex += texture2D(CC_Texture0, uv).rgba / 2.;
     }
     tex /= SAMPLE_NUM;
 }
+#endif
 
-void fuzzy(out vec4 tex) {
+#if BLUR_TYPE == 2
+void blur(out vec4 tex) {
     float w = u_blur * 0.625f;
     tex = texture2D(CC_Texture0, v_texCoord) * 8;
     tex += texture2D(CC_Texture0, v_texCoord + vec2(w, 0)) * 3;
@@ -49,30 +54,26 @@ void fuzzy(out vec4 tex) {
     tex += texture2D(CC_Texture0, v_texCoord + vec2(-w, -w));
     tex /= 24;
 }
+#endif
 
-void radial(out vec4 tex) {
+#if BLUR_TYPE == 3
+void blur(out vec4 tex) {
     vec2 d = v_texCoord - u_center;
     for (int j = 0; j < SAMPLE_NUM; j++) {
         tex += texture2D(CC_Texture0, v_texCoord - d * u_blur * j);
     }
     tex /= SAMPLE_NUM;
 }
+#endif
 
 void main() {
     vec4 tex = vec4(0.);
 
-    if (BLUR_TYPE == 1) {
-        frosted(tex);
-    }
-    else if (BLUR_TYPE == 2) {
-        fuzzy(tex);
-    }
-    else if (BLUR_TYPE == 3) {
-        radial(tex);
-    }
-    else {
+    #ifdef BLUR_TYPE
+        blur(tex);
+    #elif
         tex = texture2D(CC_Texture0, v_texCoord);
-    }
+    #endif
 
     tex *= v_fragmentColor;
     tex = dim(tex, u_brightness);
