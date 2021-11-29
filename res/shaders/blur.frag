@@ -53,7 +53,7 @@ void fuzzy(out vec4 tex) {
 void radial(out vec4 tex) {
     vec2 d = v_texCoord - u_center;
     for (int j = 0; j < SAMPLE_NUM; j++) {
-        tex += texture2D(CC_Texture0, v_texCoord + d * u_blur * j);
+        tex += texture2D(CC_Texture0, v_texCoord - d * u_blur * j);
     }
     tex /= SAMPLE_NUM;
 }
