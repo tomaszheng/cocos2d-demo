@@ -28,6 +28,7 @@ IntersectionUtils = require 'src.utils.geometry.IntersectionUtils'
 
 -- components
 Outline = require("src.components.shaders.Outline")
+Blur = require("src.components.shaders.Blur")
 
 -- widgets
 GraphicsNode = require 'src.widgets.GraphicsNode'

@@ -109,11 +109,14 @@ function Node:moveOffsetY(y)
     return self
 end
 
+function Node:center()
+    local size = self:getSize()
+    return cc.p(size.width / 2, size.height / 2)
+end
+
 function Node:moveCenter(parent)
-    if not parent then
-        parent = self:getParent()
-    end
-    self:move(parent:getContentSize().width / 2, parent:getContentSize().height / 2)
+    parent = parent or self:getParent()
+    self:move(parent:center())
     return self
 end
 

@@ -11,7 +11,7 @@ uniform float u_width;
 void main() {
     float w = u_width;
     vec4 color = v_fragmentColor * texture2D(CC_Texture0, v_texCoord);
-    if (color.a < ALPHA_THRESHOLD) {
+    if (color.a < THRESHOLD) {
         float alpha = 0.0;
         alpha += texture2D(CC_Texture0, v_texCoord + vec2(w, 0)).a;
         alpha += texture2D(CC_Texture0, v_texCoord + vec2(-w, 0)).a;
@@ -22,7 +22,7 @@ void main() {
         alpha += texture2D(CC_Texture0, v_texCoord + vec2(w, -w)).a;
         alpha += texture2D(CC_Texture0, v_texCoord + vec2(-w, -w)).a;
         alpha = clamp(alpha, 0.0, 1.0);
-        if (alpha < 0.1) {
+        if (alpha < THRESHOLD) {
             discard;
         }
         gl_FragColor = vec4(u_color, alpha);

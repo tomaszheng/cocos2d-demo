@@ -3,57 +3,45 @@
 --- Created by tomas.
 --- DateTime: 2021/11/24 15:21
 ---
-local Outline = class("Outline", BaseComponent)
+local BaseShader = require("src.components.shaders.BaseShader")
+local Outline = class("Outline", BaseShader)
 
-local VERT = "res/shaders/noMV.vert"
-local FRAG = "res/shaders/outline.frag"
-local DEFAULT_COLOR = cc.c3b(255, 0, 0)
-local DEFAULT_WIDTH = 0.02
+Outline.VERT = "res/shaders/noMV.vert"
+Outline.FRAG = "res/shaders/outline.frag"
+
 local COLOR_NAME = "u_color"
 local WIDTH_NAME = "u_width"
+local DEFAULT_COLOR = cc.c3b(255, 0, 0)
+local DEFAULT_WIDTH = 0.02
 
-function Outline:ctor(data)
-    Outline.super.ctor(self, data)
-    self:initData(data)
-    self:initGLState()
+function Outline:ctor(node, data)
+    Outline.super.ctor(self, node, data)
 end
 
 function Outline:initData(data)
-    self.defines = {
-        threshold = data.threshold or 0.1
-    }
-    self.glState = nil
+    data = data or {}
+    Outline.super.initData(self, data)
+
+    -- 描边颜色
+    self.color = data.color or DEFAULT_COLOR
+    -- 描边宽度
+    self.width = data.width or DEFAULT_WIDTH
+    self.defines.threshold = self.defines.threshold or 0.1
 end
 
-function Outline:initGLState()
-    self.glState = cc.GLProgramState:getOrCreateWithShaders(VERT, FRAG, self:getCompileTimeDefine())
-    self:setColor(DEFAULT_COLOR, false)
-    self:setWidth(DEFAULT_WIDTH, false)
-    self.node:setGLProgramState(self.glState)
-end
-
-function Outline:getCompileTimeDefine()
-    local defines = {
-        "ALPHA_THRESHOLD " .. self.defines.threshold
-    }
-    return table.concat(defines, ";")
+function Outline:setDefaultUniform()
+    self:setColor(self.color, false)
+    self:setWidth(self.width, false)
 end
 
 function Outline:setColor(color, immediately)
-    immediately = immediately == nil and true or immediately
-    local c4f = cc.convertColor(color, "4f")
-    self.glState:setUniformVec3(COLOR_NAME, cc.vec3(c4f.r, c4f.g, c4f.b))
-    if immediately then
-        self.node:setGLProgramState(self.glState)
-    end
+    self.color = color
+    self:setColor3f(COLOR_NAME, color, immediately)
 end
 
 function Outline:setWidth(width, immediately)
-    immediately = immediately == nil and true or immediately
-    self.glState:setUniformFloat(WIDTH_NAME, width)
-    if immediately then
-        self.node:setGLProgramState(self.glState)
-    end
+    self.width = width
+    self:setFloat(WIDTH_NAME, width, immediately)
 end
 
 return Outline
