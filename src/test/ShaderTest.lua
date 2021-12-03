@@ -44,7 +44,7 @@ function ShaderTest:testBlur()
                       :addTo(self)
     avatar5:addLuaComponent(Blur, {
         defines = {sampleNum = 5, blurType = Blur.BLUR_TYPE.GAUSSIAN},
-        radius = 90
+        radius = 7
     })
 end
 

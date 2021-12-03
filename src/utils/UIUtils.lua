@@ -27,13 +27,15 @@ function UIUtils.screenshot(target, options)
     local onComplete = options.onComplete
 
     local pixelSize = cc.Director:getInstance():getWinSizeInPixels()
+    local leftBottom = target:convertToWorldSpace(cc.p(area.x, area.y))
+    local rightTop = target:convertToWorldSpace(cc.p(area.x + area.width, area.y + area.height))
+    local width, height = rightTop.x - leftBottom.x, rightTop.y - leftBottom.y
     local fullRect = cc.rect(0, 0, display.width, display.height)
     local fullViewport = cc.rect(0, 0, pixelSize.width, pixelSize.height)
-    local rtOrigin = target:convertToWorldSpace(cc.p(area.x, area.y))
 
-    local rt = cc.RenderTexture:create(area.width, area.height, cc.TEXTURE2_D_PIXEL_FORMAT_RGB_A8888, gl.DEPTH24_STENCIL8_OES)
+    local rt = cc.RenderTexture:create(width, height, cc.TEXTURE2_D_PIXEL_FORMAT_RGB_A8888, gl.DEPTH24_STENCIL8_OES)
     rt:setKeepMatrix(true)
-    rt:setVirtualViewport(rtOrigin, fullRect, fullViewport)
+    rt:setVirtualViewport(leftBottom, fullRect, fullViewport)
     rt:beginWithClear(1, 1, 1, 0)
     target:visit()
     rt:endToLua()

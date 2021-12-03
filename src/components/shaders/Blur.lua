@@ -38,7 +38,7 @@ local RADIUS_NAME = "u_radius"
 local BRIGHTNESS_NAME = "u_brightness"
 local CENTER_NAME = "u_center"
 local RESOLUTION_NAME = "u_resolution"
-local DEFAULT_RADIUS = 10
+local DEFAULT_RADIUS = 7
 local DEFAULT_BRIGHTNESS = 1
 
 function Blur:ctor(node, data)
