@@ -5,11 +5,11 @@
 ---
 local Singleton = class('Singleton')
 
-function Singleton.getInstance(instance)
-    if instance._instance == nil then
-        instance._instance = instance.new()
+function Singleton.getInstance(cls)
+    if not cls.__instance == nil then
+        cls.__instance = cls.new()
     end
-    return instance._instance
+    return cls.__instance
 end
 
 return Singleton

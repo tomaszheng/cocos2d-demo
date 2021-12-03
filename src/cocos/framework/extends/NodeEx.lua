@@ -130,7 +130,7 @@ function Node:getCascadeScale()
 end
 
 function Node:getWorldPosition()
-    return self:getParent():convertToWorldSpace(self:getPosition())
+    return self:getParent():convertToWorldSpace(cc.p(self:getPosition()))
 end
 
 function Node:getSize()

@@ -13,6 +13,8 @@ require("src.extends.math")
 require("src.extends.string")
 require("src.extends.table")
 
+require("src.utils.functions")
+
 -- base
 Singleton = require("src.base.Singleton")
 BaseNode = require("src.base.BaseNode")
@@ -20,9 +22,10 @@ BaseScene = require("src.base.BaseScene")
 BaseComponent = require("src.base.BaseComponent")
 
 -- managers
-eventManager = require("src.managers.eventManager")
+EventManager = require("src.managers.EventManager")
 
 -- utils
+UIUtils = require("src.utils.UIUtils")
 GeometryConstants = require 'src.utils.geometry.GeometryConstants'
 IntersectionUtils = require 'src.utils.geometry.IntersectionUtils'
 

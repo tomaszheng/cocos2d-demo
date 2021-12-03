@@ -306,36 +306,13 @@ function import(moduleName, currentModuleName)
     return require(moduleFullName)
 end
 
-function handler(obj, method)
+function handler(obj, method, ...)
+    local args = {...}
     return function(...)
-        return method(obj, ...)
-    end
-end
-
-function try(block)
-    local main = block.main
-    local catch = block.catch
-    local finally = block.finally
-
-    assert(main)
-
-    -- try to call it
-    local ok, errors = xpcall(main, __G__TRACKBACK__)
-    if not ok then
-        -- run the catch function
-        if catch then
-            catch(errors)
+        if #args > 0 then
+            return method(obj, unpack(args), ...)
+        else
+            return method(obj, ...)
         end
     end
-
-    -- run the finally function
-    if finally then
-        finally(ok, errors)
-    end
-
-    -- ok?
-    if ok then
-        return errors
-    end
 end
-

@@ -9,4 +9,5 @@ function EventManager:ctor()
     cc.load("event").new():bind(self)
 end
 
-return EventManager:getInstance()
+EventManager.instance = EventManager:getInstance()
+return EventManager

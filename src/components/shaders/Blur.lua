@@ -9,8 +9,9 @@
 --[[
 node:addLuaComponent(Blur,
 {
-    blur = 0.03,        -- 模糊度
+    radius = 3,         -- 模糊半径
     brightness = 1,     -- 亮度
+    center = cc.p(0,0), -- 径向模糊中心
     defines = {         -- 宏定义
         sampleNum = 5,  -- 采样次数
         blurType = Blur.BLUR_TYPE.FROSTED   -- 模糊类型
@@ -25,17 +26,19 @@ Blur.VERT = "res/shaders/noMV.vert"
 Blur.FRAG = "res/shaders/blur.frag"
 
 Blur.BLUR_TYPE = {
-    FROSTED = 1,    -- 磨砂效果
-    FUZZY = 2,      -- 有点视力下降的感觉
+    NORMAL = 1,
+    FROSTED = 2,    -- 磨砂效果
     RADIAL = 3,     -- 径向模糊
+    GAUSSIAN = 4,   -- 高斯模糊
 }
 
 local DEFINE_SAMPLE_NUM = 5
 
-local BLUR_NAME = "u_blur"
+local RADIUS_NAME = "u_radius"
 local BRIGHTNESS_NAME = "u_brightness"
 local CENTER_NAME = "u_center"
-local DEFAULT_BLUR = 0.03
+local RESOLUTION_NAME = "u_resolution"
+local DEFAULT_RADIUS = 10
 local DEFAULT_BRIGHTNESS = 1
 
 function Blur:ctor(node, data)
@@ -46,29 +49,30 @@ function Blur:initData(data)
     data = data or {}
     Blur.super.initData(self, data)
 
-    -- 模糊度
-    self.blur = data.blur or DEFAULT_BLUR
+    -- 模糊半径
+    self.radius = data.radius or DEFAULT_RADIUS
     -- 亮度
     self.brightness = data.brightness or DEFAULT_BRIGHTNESS
     -- 径向模糊的中心
     self.center = data.center or cc.p(0.5, 0.5)
+    -- 图片的大小
+    self.resolution = self.node:getTexture():getContentSizeInPixels()
     -- 宏定义选项 - 模糊类型
-    self.defines.blurType = self.defines.blurType or Blur.BLUR_TYPE.FROSTED
+    self.defines.blurType = self.defines.blurType or Blur.BLUR_TYPE.GAUSSIAN
     -- 宏定义选项 - 采样次数，当blurType等于FUZZY/RADIAL有效
     self.defines.sampleNum = self.defines.sampleNum or DEFINE_SAMPLE_NUM
 end
 
 function Blur:setDefaultUniform()
-    self:setBlur(self.blur, false)
+    self:setRadius(self.radius, false)
     self:setBrightness(self.brightness, false)
-    if self.defines.blurType == Blur.BLUR_TYPE.RADIAL then
-        self:setCenter(self.center)
-    end
+    self:setCenter(self.center, false)
+    self:setResolution(self.resolution, false)
 end
 
-function Blur:setBlur(blur, immediately)
-    self.blur = blur
-    self:setFloat(BLUR_NAME, blur, immediately)
+function Blur:setRadius(radius, immediately)
+    self.radius = radius
+    self:setFloat(RADIUS_NAME, radius, immediately)
 end
 
 function Blur:setBrightness(brightness, immediately)
@@ -77,8 +81,15 @@ function Blur:setBrightness(brightness, immediately)
 end
 
 function Blur:setCenter(center, immediately)
+    if self.defines.blurType ~= Blur.BLUR_TYPE.RADIAL then return end
+
     self.center = cc.pNormalize(self.center)
     self:setVec2(CENTER_NAME, center, immediately)
+end
+
+function Blur:setResolution(resolution, immediately)
+    self.resolution = resolution
+    self:setVec2(RESOLUTION_NAME, cc.p(resolution.width, resolution.height), immediately)
 end
 
 return Blur
