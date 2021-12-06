@@ -1,5 +1,4 @@
-
-if not gl then return end
+gl = gl or {}
 
 --Create functions
 function  gl.createTexture()

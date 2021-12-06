@@ -1,5 +1,4 @@
-
-if not gl then return end
+gl = gl or {}
 
 gl.GCCSO_SHADER_BINARY_FJ   = 0x9260
 gl._3DC_XY_AMD  = 0x87fa
