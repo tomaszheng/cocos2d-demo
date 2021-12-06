@@ -31,7 +31,6 @@ printInfo("#")
 
 device     = require("src.cocos.framework.device")
 display    = require("src.cocos.framework.display")
-audio      = require("src.cocos.framework.audio")
 transition = require("src.cocos.framework.transition")
 
 require("src.cocos.framework.extends.NodeEx")
