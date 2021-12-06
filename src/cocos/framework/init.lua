@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 if type(DEBUG) ~= "number" then DEBUG = 0 end
 
+require("src.cocos.framework.debug")
+
 -- load framework
 printInfo("")
 printInfo("# DEBUG                        = " .. DEBUG)
 printInfo("#")
-
-require("src.cocos.framework.debug")
 
 device     = require("src.cocos.framework.device")
 display    = require("src.cocos.framework.display")
