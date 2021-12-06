@@ -27,18 +27,19 @@ require "src.cocos.cocos2d.Cocos2dConstants"
 require "src.cocos.cocos2d.functions"
 
 -- opengl
-require "src.cocos.cocos2d.Opengl"
 require "src.cocos.cocos2d.OpenglConstants"
+
 -- audio
 require "src.cocos.cocosdenshion.AudioEngine"
+
 -- cocosstudio
 if nil ~= ccs then
     require "src.cocos.cocostudio.CocoStudio"
 end
+
 -- ui
 if nil ~= ccui then
     require "src.cocos.ui.GuiConstants"
-    require "src.cocos.ui.experimentalUIConstants"
 end
 
 -- extensions
@@ -54,9 +55,6 @@ require "src.cocos.cocos2d.DrawPrimitives"
 
 -- Lua extensions
 require "cocos.cocos2d.bitExtend"
-
--- cocosbuilder
-require "src.cocos.cocosbuilder.CCBReaderLoad"
 
 -- physics3d
 require "src.cocos.physics3d.physics3d-constants"

@@ -29,9 +29,12 @@ printInfo("")
 printInfo("# DEBUG                        = " .. DEBUG)
 printInfo("#")
 
+require("src.cocos.framework.debug")
+
 device     = require("src.cocos.framework.device")
 display    = require("src.cocos.framework.display")
 transition = require("src.cocos.framework.transition")
+crypto     = require("src.cocos.framework.crypto")
 
 require("src.cocos.framework.extends.NodeEx")
 require("src.cocos.framework.extends.SpriteEx")
