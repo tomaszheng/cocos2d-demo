@@ -2,9 +2,9 @@
     "init_cfg":{
        "isLandscape": true,
        "isWindowTop": false,
-       "name": "demo-cocos2d-x",
-       "width": 1280,
-       "height": 720,
+       "name": "cocos2d-demo",
+       "width": 960,
+       "height": 540,
        "entry": "src/main.lua",
        "consolePort": 6050,
        "uploadPort": 6060

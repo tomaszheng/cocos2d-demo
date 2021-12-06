@@ -35,9 +35,7 @@
 frameworks/
 frameworks/cocos2d-x
 frameworks/runtime-src
-
-# Simulator
-simulator/
+win32-build/
 
 # Settings
 .idea
