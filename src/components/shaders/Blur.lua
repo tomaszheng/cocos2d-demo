@@ -42,7 +42,6 @@ local SAMPLE_NUM_NAME = "u_sampleNum"
 local RADIUS_NAME = "u_radius"
 local BRIGHTNESS_NAME = "u_brightness"
 local CENTER_NAME = "u_center"
-local RESOLUTION_NAME = "u_resolution"
 
 function Blur:ctor(node, data)
     Blur.super.ctor(self, node, data)
@@ -62,17 +61,16 @@ function Blur:initData(data)
     self.brightness = data.brightness or DEFAULT_BRIGHTNESS
     -- 径向模糊的中心
     self.center = data.center or cc.p(0.5, 0.5)
-    -- 图片的大小
-    self.resolution = self.node:getTexture():getContentSizeInPixels()
 end
 
 function Blur:initDefaultUniform()
+    Blur.super.initDefaultUniform(self)
+
     self:setBlurType(self.blurType)
     self:setSampleNum(self.sampleNum)
     self:setRadius(self.radius)
     self:setBrightness(self.brightness)
     self:setCenter(self.center)
-    self:setResolution(self.resolution)
 end
 
 function Blur:setBlurType(blurType)
@@ -106,11 +104,6 @@ function Blur:setCenter(center)
 
     self.center = cc.pNormalize(self.center)
     self:setVec2(CENTER_NAME, center)
-end
-
-function Blur:setResolution(resolution)
-    self.resolution = resolution
-    self:setVec2(RESOLUTION_NAME, cc.p(resolution.width, resolution.height))
 end
 
 return Blur

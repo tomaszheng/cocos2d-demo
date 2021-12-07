@@ -10,11 +10,12 @@ local Outline = class("Outline", BaseShader)
 Outline.VERT = "res/shaders/mvp.vsh"
 Outline.FRAG = "res/shaders/outline.fsh"
 
+local DEFAULT_COLOR = cc.c3b(255, 0, 0)
+local DEFAULT_WIDTH = 3
+
 local COLOR_NAME = "u_color"
 local WIDTH_NAME = "u_width"
 local THRESHOLD_NAME = "u_threshold"
-local DEFAULT_COLOR = cc.c3b(255, 0, 0)
-local DEFAULT_WIDTH = 0.02
 
 function Outline:ctor(node, data)
     Outline.super.ctor(self, node, data)
@@ -33,6 +34,8 @@ function Outline:initData(data)
 end
 
 function Outline:initDefaultUniform()
+    Outline.super.initDefaultUniform(self)
+
     self:setColor(self.color)
     self:setWidth(self.width)
     self:setThreshold(self.threshold)
