@@ -6,7 +6,7 @@
 local Singleton = class('Singleton')
 
 function Singleton.getInstance(cls)
-    if not cls.__instance == nil then
+    if not cls.__instance then
         cls.__instance = cls.new()
     end
     return cls.__instance

@@ -2,10 +2,12 @@ local ShaderTest = require("src.test.ShaderTest")
 local MainScene = class("MainScene", BaseScene)
 
 function MainScene:ctor()
+    MainScene.super.ctor(self)
+
     local bg = cc.Sprite:create("res/bg_default.png"):addTo(self):moveCenter()
     bg:setScale(display.height / bg:getHeight())
 
-    --ShaderTest.new():addTo(self)
+    ShaderTest.new():addTo(self)
 
     -- add HelloWorld label
     cc.Label:createWithSystemFont("Hello World", "Arial", 40)

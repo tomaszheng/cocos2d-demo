@@ -13,11 +13,11 @@ function BaseScene:ctor()
 end
 
 function BaseScene:onEnter(...)
-    print('---------Scene', self.__cname, 'onEnter')
+    printLog(self.__cname, "onEnter")
 end
 
 function BaseScene:onExit()
-    print('---------Scene', self.__cname, 'onExit')
+    printLog(self.__cname, "onExit")
 
     self:disableNodeEvents()
     self:removeAllGlobalListeners()
@@ -25,14 +25,14 @@ function BaseScene:onExit()
 end
 
 function BaseScene:addGlobalListener(eventName, callback)
-    local handle = eventManager:addEventListener(eventName, callback)
+    local handle = EventManager.instance:addEventListener(eventName, callback)
     table.insert(self._globalListeners, handle)
     return handle
 end
 
 function BaseScene:removeAllGlobalListeners()
     table.walk(self._globalListeners, function(handle)
-        eventManager:removeEventListener(handle)
+        EventManager.instance:removeEventListener(handle)
     end)
     self._globalListeners = {}
 end

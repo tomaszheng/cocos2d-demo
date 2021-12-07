@@ -5,13 +5,14 @@
 ---
 local BaseShader = class("BaseShader", BaseComponent)
 
-BaseShader.VERT = "res/shaders/noMV.vert"
-BaseShader.FRAG = "res/shaders/noMV.frag"
+BaseShader.VERT = "res/shaders/mvp.vsh"
+BaseShader.FRAG = "res/shaders/mvp.fsh"
 
 function BaseShader:ctor(node, data)
     BaseShader.super.ctor(self, node, data)
     self:initData(data)
     self:initGLState()
+    self:initDefaultUniform()
 end
 
 function BaseShader:initData(data)
@@ -23,74 +24,58 @@ function BaseShader:initData(data)
 end
 
 function BaseShader:initGLState()
-    self.glState = cc.GLProgramState:getOrCreateWithShaders(self.vert, self.frag, self:getCompileTimeDefine())
-    self:setDefaultUniform()
-    self:setGLState(true)
+    local vert = cc.FileUtils:getInstance():getStringFromFile(self.vert)
+    local frag = cc.FileUtils:getInstance():getStringFromFile(self.frag)
+    local program = ccb.Device:getInstance():newProgram(vert, frag)
+    self.glState = ccb.ProgramState:new(program)
+    program:release()
+    self:setGLState()
 end
 
-function BaseShader:setDefaultUniform()
+function BaseShader:initDefaultUniform()
     --- TODO override
 end
 
-function BaseShader:getCompileTimeDefine()
-    local defines = {}
-    table.walk(self.defines, function(define, key)
-        local chars = string.toTable(key)
-        table.walk(chars, function(char, i)
-            if i ~= 1 and char >= "A" and char <= "Z" and chars[i - 1] ~= "_" then
-                chars[i] = "_" .. char
-            end
-        end)
-        key = table.concat(chars):upper()
-        table.insert(defines, key .. " " .. define)
-    end)
-    return table.concat(defines, ";")
+function BaseShader:setVec2(name, v2)
+    self:setUniform(name, cc.bytearray.from_vec2(v2))
 end
 
-function BaseShader:setVec2(name, v2, immediately)
-    self.glState:setUniformVec2(name, v2)
-    self:setGLState(immediately)
+function BaseShader:setVec3(name, v3)
+    self:setUniform(name, cc.bytearray.from_vec3(v3))
 end
 
-function BaseShader:setVec3(name, v3, immediately)
-    self.glState:setUniformVec3(name, v3)
-    self:setGLState(immediately)
+function BaseShader:setVec4(name, v4)
+    self:setUniform(name, cc.bytearray.from_vec4(v4))
 end
 
-function BaseShader:setVec4(name, v4, immediately)
-    self.glState:setUniformVec3(name, v4)
-    self:setGLState(immediately)
+function BaseShader:setFloat(name, f)
+    self:setUniform(name, cc.bytearray.from_float(f))
 end
 
-function BaseShader:setFloat(name, f, immediately)
-    self.glState:setUniformFloat(name, f)
-    self:setGLState(immediately)
+function BaseShader:setInt(name, n)
+    self:setUniform(name, cc.bytearray.from_int(n))
 end
 
-function BaseShader:setInt(name, n, immediately)
-    self.glState:setUniformInt(name, n)
-    self:setGLState(immediately)
+function BaseShader:setUniform(name, v)
+    self.glState:setUniform(name, v)
 end
 
-function BaseShader:setTexture(name, tex, immediately)
+function BaseShader:setTexture(name, tex)
 
 end
 
-function BaseShader:setColor3f(name, color, immediately)
+function BaseShader:setColor3f(name, color)
     local c4f = cc.convertColor(color, "4f")
-    self:setVec3(name, cc.vec3(c4f.r, c4f.g, c4f.b), immediately)
+    self:setVec3(name, cc.vec3(c4f.r, c4f.g, c4f.b))
 end
 
-function BaseShader:setColor4f(name, color, immediately)
+function BaseShader:setColor4f(name, color)
     local c4f = cc.convertColor(color, "4f")
-    self:setVec4(name, cc.vec4(c4f.r, c4f.g, c4f.b, c4f.a), immediately)
+    self:setVec4(name, cc.vec4(c4f.r, c4f.g, c4f.b, c4f.a))
 end
 
-function BaseShader:setGLState(immediately)
-    immediately = immediately == nil and true or immediately
-    if immediately then
-        self.node:setGLProgramState(self.glState)
-    end
+function BaseShader:setGLState()
+    self.node:setProgramState(self.glState)
 end
 
 return BaseShader

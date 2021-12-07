@@ -16,14 +16,14 @@ function BaseNode:onExit(...)
 end
 
 function BaseNode:addGlobalListener(eventName, callback)
-    local handle = eventManager:addEventListener(eventName, callback)
+    local handle = EventManager.instance:addEventListener(eventName, callback)
     table.insert(self._globalListeners, handle)
     return handle
 end
 
 function BaseNode:removeAllGlobalListeners()
     table.walk(self._globalListeners, function(handle)
-        eventManager:removeEventListener(handle)
+        EventManager.instance:removeEventListener(handle)
     end)
     self._globalListeners = {}
 end

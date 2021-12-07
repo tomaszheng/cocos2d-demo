@@ -19,7 +19,7 @@ end
 function printLog(tag, fmt, ...)
     local t = {
         "[",
-        string.upper(tostring(tag)),
+        tostring(tag),
         "] ",
         string.format(tostring(fmt), ...)
     }

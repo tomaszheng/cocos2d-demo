@@ -7,11 +7,12 @@
 local BaseShader = require("src.components.shaders.BaseShader")
 local Outline = class("Outline", BaseShader)
 
-Outline.VERT = "res/shaders/noMV.vert"
-Outline.FRAG = "res/shaders/outline.frag"
+Outline.VERT = "res/shaders/mvp.vsh"
+Outline.FRAG = "res/shaders/outline.fsh"
 
 local COLOR_NAME = "u_color"
 local WIDTH_NAME = "u_width"
+local THRESHOLD_NAME = "u_threshold"
 local DEFAULT_COLOR = cc.c3b(255, 0, 0)
 local DEFAULT_WIDTH = 0.02
 
@@ -27,22 +28,29 @@ function Outline:initData(data)
     self.color = data.color or DEFAULT_COLOR
     -- 描边宽度
     self.width = data.width or DEFAULT_WIDTH
-    self.defines.threshold = self.defines.threshold or 0.1
+    -- 阈值
+    self.threshold = data.threshold or 0.1
 end
 
-function Outline:setDefaultUniform()
-    self:setColor(self.color, false)
-    self:setWidth(self.width, false)
+function Outline:initDefaultUniform()
+    self:setColor(self.color)
+    self:setWidth(self.width)
+    self:setThreshold(self.threshold)
 end
 
-function Outline:setColor(color, immediately)
+function Outline:setColor(color)
     self.color = color
-    self:setColor3f(COLOR_NAME, color, immediately)
+    self:setColor3f(COLOR_NAME, color)
 end
 
-function Outline:setWidth(width, immediately)
+function Outline:setWidth(width)
     self.width = width
-    self:setFloat(WIDTH_NAME, width, immediately)
+    self:setFloat(WIDTH_NAME, width)
+end
+
+function Outline:setThreshold(threshold)
+    self.threshold = threshold
+    self:setFloat(THRESHOLD_NAME, threshold)
 end
 
 return Outline

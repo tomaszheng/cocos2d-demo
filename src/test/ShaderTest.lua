@@ -22,28 +22,34 @@ function ShaderTest:testBlur()
                       :move(100, 400)
                       :addTo(self)
     avatar2:addLuaComponent(Blur, {
-        defines = {blurType = Blur.BLUR_TYPE.NORMAL},
+        blurType = Blur.BLUR_TYPE.NORMAL,
         radius = 5
     })
 
     local avatar3 = cc.Sprite:create("res/bg_avatar_default.png")
                       :move(300, 400)
                       :addTo(self)
-    avatar3:addLuaComponent(Blur, {defines = {blurType = Blur.BLUR_TYPE.FROSTED, sampleNum = 5}})
+    avatar3:addLuaComponent(Blur, {
+        blurType = Blur.BLUR_TYPE.FROSTED,
+        sampleNum = 5
+    })
 
     local avatar4 = cc.Sprite:create("res/bg_avatar_default.png")
                       :move(500, 400)
                       :addTo(self)
     avatar4:addLuaComponent(Blur, {
-        defines = {sampleNum = 5, blurType = Blur.BLUR_TYPE.RADIAL},
-        radius = 10, center = cc.p(0.5, 0.8)
+        sampleNum = 5,
+        blurType = Blur.BLUR_TYPE.RADIAL,
+        radius = 10,
+        center = cc.p(0.5, 0.8)
     })
 
     local avatar5 = cc.Sprite:create("res/bg_avatar_default.png")
                       :move(700, 400)
                       :addTo(self)
     avatar5:addLuaComponent(Blur, {
-        defines = {sampleNum = 5, blurType = Blur.BLUR_TYPE.GAUSSIAN},
+        sampleNum = 5,
+        blurType = Blur.BLUR_TYPE.GAUSSIAN,
         radius = 7
     })
 end
