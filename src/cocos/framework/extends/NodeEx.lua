@@ -209,12 +209,12 @@ function Node:onUpdate(callback)
 end
 
 function Node:getBoundingBoxToWorld()
-    local size, anchor = self:getContentSize() , self:getAnchorPoint()
-    local scale = self:getNodeToWorldTransform()[1]
-    local x = self:getPositionX() - size.width * anchor.x
-    local y = self:getPositionY() - size.height * anchor.y
+    local cascadeScale = self:getNodeToWorldTransform()[1]
+    local size, anchor, scale = self:getContentSize(), self:getAnchorPoint(), self:getScale()
+    local x = self:getPositionX() - size.width * scale * anchor.x
+    local y = self:getPositionY() - size.height * scale * anchor.y
     local position = self:getParent():convertToWorldSpace(cc.p(x, y))
-    return cc.rect(position.x, position.y, size.width * scale, size.height * scale)
+    return cc.rect(position.x, position.y, size.width * cascadeScale, size.height * cascadeScale)
 end
 
 function Node:delayAction(callback, delay)
