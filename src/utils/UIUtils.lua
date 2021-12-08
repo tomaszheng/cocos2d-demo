@@ -10,7 +10,7 @@ function UIUtils.center(size)
 end
 
 ---
---- 截图
+--- 对指定目标进行截图
 --- @param target cc.Node 截图的目标对象
 --- @param options table 可选参数
 --- @param area cc.Rect 截图区域，在target坐标系下
