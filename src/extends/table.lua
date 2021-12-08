@@ -87,13 +87,13 @@ function table.removeByValue(array, value, removeall)
 end
 
 function table.map(t, fn)
-    for k, v in pairs(t) do
+    for k, v in pairs(t or {}) do
         t[k] = fn(v, k)
     end
 end
 
 function table.walk(t, fn)
-    for k, v in pairs(t) do
+    for k, v in pairs(t or {}) do
         fn(v, k)
     end
 end
@@ -120,7 +120,7 @@ function table.some(t, fn, begin, reverse)
 end
 
 function table.filter(t, fn)
-    for k, v in pairs(t) do
+    for k, v in pairs(t or {}) do
         if not fn(v, k) then
             t[k] = nil
         end
