@@ -26,6 +26,7 @@ EventManager = require("src.managers.EventManager")
 
 -- utils
 UIUtils = require("src.utils.UIUtils")
+ShotUtils = require("src.utils.ShotUtils")
 GeometryConstants = require 'src.utils.geometry.GeometryConstants'
 IntersectionUtils = require 'src.utils.geometry.IntersectionUtils'
 

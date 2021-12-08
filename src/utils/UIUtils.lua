@@ -9,45 +9,16 @@ function UIUtils.center(size)
     return cc.p(size.width / 2, size.height / 2)
 end
 
----
---- 对指定目标进行截图
---- @param target cc.Node 截图的目标对象
---- @param options table 可选参数
---- @param area cc.Rect 截图区域，在target坐标系下
---- @param options.filename string 保存图片的文件名
---- @param options.fileFormat number 保存图片的格式
---- @param options.onComplete function 保存图片完成的回调
---- @return cc.RenderTexture
-function UIUtils.screenshot(target, options)
-    options = options or {}
+local __debugNodeIncrementalRGB = 1
+function UIUtils.debug(target)
+    __debugNodeIncrementalRGB = (__debugNodeIncrementalRGB * 43897) % 0xffffff
     local size = target:getContentSize()
-    local area = options.area or cc.rect(0, 0, size.width, size.height)
-    local savedFilename = options.filename
-    local savedFileFormat = options.fileFormat or cc.IMAGE_FORMAT_PNG
-    local onComplete = options.onComplete
-
-    local pixelSize = cc.Director:getInstance():getWinSizeInPixels()
-    local leftBottom = target:convertToWorldSpace(cc.p(area.x, area.y))
-    local rightTop = target:convertToWorldSpace(cc.p(area.x + area.width, area.y + area.height))
-    local width, height = rightTop.x - leftBottom.x, rightTop.y - leftBottom.y
-    local fullRect = cc.rect(0, 0, display.width, display.height)
-    local fullViewport = cc.rect(0, 0, pixelSize.width, pixelSize.height)
-
-    local rt = cc.RenderTexture:create(width, height, cc.TEXTURE2_D_PIXEL_FORMAT_RGB_A8888, gl.DEPTH24_STENCIL8_OES)
-    rt:setKeepMatrix(true)
-    rt:setVirtualViewport(leftBottom, fullRect, fullViewport)
-    rt:beginWithClear(1, 1, 1, 0)
-    target:visit()
-    rt:endToLua()
-    if savedFilename then
-        rt:saveToFile(savedFilename, savedFileFormat)
-    end
-    if onComplete and savedFilename then
-        delayCall(function()
-            doCallback(onComplete, cc.FileUtils:getInstance():getWritablePath() .. savedFilename)
-        end, 0)
-    end
-    return rt
+    local layout = target:getChildByName("__DEBUG_NODE__") or ccui.Layout:create():addTo(target)
+    layout:setBackGroundColorType(ccui.LayoutBackGroundColorType.solid)
+    layout:setBackGroundColor(hexColor(__debugNodeIncrementalRGB))
+    layout:setBackGroundColorOpacity(165)
+    layout:setContentSize(size)
+    layout:setName("__DEBUG_NODE__")
 end
 
 return UIUtils
