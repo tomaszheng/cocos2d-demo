@@ -121,12 +121,7 @@ function Node:moveCenter(parent)
 end
 
 function Node:getCascadeScale()
-    local scale, node = 1, self
-    while node do
-        scale = scale * node:getScale()
-        node = node:getParent()
-    end
-    return scale
+    return self:getNodeToWorldTransform()[1]
 end
 
 function Node:getWorldPosition()
