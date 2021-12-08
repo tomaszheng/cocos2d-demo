@@ -10,9 +10,13 @@ function UIUtils.center(size)
 end
 
 local __debugNodeIncrementalRGB = 1
-function UIUtils.debug(target)
+function UIUtils.debug(target, isCascade)
     __debugNodeIncrementalRGB = (__debugNodeIncrementalRGB * 43897) % 0xffffff
     local size = target:getContentSize()
+    if isCascade then
+        local rect = target:convertRectToNodeSpace(target:getCascadeBoundingBoxToWorld())
+        size = cc.size(rect.width, rect.height)
+    end
     local layout = target:getChildByName("__DEBUG_NODE__") or ccui.Layout:create():addTo(target)
     layout:setBackGroundColorType(ccui.LayoutBackGroundColorType.solid)
     layout:setBackGroundColor(hexColor(__debugNodeIncrementalRGB))

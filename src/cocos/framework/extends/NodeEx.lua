@@ -212,6 +212,28 @@ function Node:getBoundingBoxToWorld()
     return cc.rect(position.x, position.y, size.width * cascadeScale, size.height * cascadeScale)
 end
 
+function Node:getCascadeBoundingBox()
+    local rect = self:getCascadeBoundingBoxToWorld()
+    return self:getParent():convertRectToNodeSpace(rect)
+end
+
+function Node:getCascadeBoundingBoxToWorld()
+    local children, total = self:getChildren()
+    table.walk(children, function(child)
+        local box = child:getCascadeBoundingBoxToWorld()
+        total = total and cc.rectUnion(total, box) or box
+    end)
+    local box = self:getBoundingBoxToWorld()
+    total = total and cc.rectUnion(total, box) or box
+    return total
+end
+
+function Node:convertRectToNodeSpace(rect)
+    local lb = self:convertToNodeSpace(cc.p(rect.x, rect.y))
+    local rt = self:convertToNodeSpace(cc.p(rect.x + rect.width, rect.y + rect.height))
+    return cc.rect(lb.x, lb.y, rt.x - lb.x, rt.y - lb.y)
+end
+
 function Node:delayAction(callback, delay)
     self:runAction(cc.Sequence:create(cc.DelayTime:create(delay or 0), cc.CallFunc:create(function()
         doCallback(callback)
