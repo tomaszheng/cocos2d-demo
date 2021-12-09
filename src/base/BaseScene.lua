@@ -14,9 +14,6 @@ end
 
 function BaseScene:onEnter(...)
     printLog(self.__cname, "onEnter")
-    if device.platform == "windows" or device.platform == "mac" then
-        cc.Director:getInstance():getOpenGLView():setFrameSize(CC_FRAME_SIZE.width, CC_FRAME_SIZE.height)
-    end
 end
 
 function BaseScene:onExit()

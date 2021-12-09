@@ -28,21 +28,16 @@ local director = cc.Director:getInstance()
 local view = director:getOpenGLView()
 
 if not view then
-    local width = 960
-    local height = 640
-    if CC_DESIGN_RESOLUTION then
-        if CC_DESIGN_RESOLUTION.width then
-            width = CC_DESIGN_RESOLUTION.width
-        end
-        if CC_DESIGN_RESOLUTION.height then
-            height = CC_DESIGN_RESOLUTION.height
-        end
+    local width, height = 960, 540
+    if CC_FRAME_SIZE then
+        width = CC_FRAME_SIZE.width or width
+        height = CC_FRAME_SIZE.height or height
     end
     view = cc.GLViewImpl:createWithRect("Cocos2d-Lua", cc.rect(0, 0, width, height))
     director:setOpenGLView(view)
 end
 
-local framesize = view:getFrameSize()
+local frameSize = view:getFrameSize()
 local textureCache = director:getTextureCache()
 local spriteFrameCache = cc.SpriteFrameCache:getInstance()
 local animationCache = cc.AnimationCache:getInstance()
@@ -51,33 +46,33 @@ local animationCache = cc.AnimationCache:getInstance()
 local function checkResolution(r)
     r.width = checknumber(r.width)
     r.height = checknumber(r.height)
-    r.autoscale = string.upper(r.autoscale)
+    r.autoScale = string.upper(r.autoScale)
     assert(r.width > 0 and r.height > 0,
         string.format("display - invalid design resolution size %d, %d", r.width, r.height))
 end
 
-local function setDesignResolution(r, framesize)
-    if r.autoscale == "FILL_ALL" then
-        view:setDesignResolutionSize(framesize.width, framesize.height, cc.ResolutionPolicy.FILL_ALL)
+local function setDesignResolution(r, frameSize)
+    if r.autoScale == "FILL_ALL" then
+        view:setDesignResolutionSize(frameSize.width, frameSize.height, cc.ResolutionPolicy.FILL_ALL)
     else
-        local scaleX, scaleY = framesize.width / r.width, framesize.height / r.height
-        local width, height = framesize.width, framesize.height
-        if r.autoscale == "FIXED_WIDTH" then
-            width = framesize.width / scaleX
-            height = framesize.height / scaleX
+        local scaleX, scaleY = frameSize.width / r.width, frameSize.height / r.height
+        local width, height = frameSize.width, frameSize.height
+        if r.autoScale == "FIXED_WIDTH" then
+            width = frameSize.width / scaleX
+            height = frameSize.height / scaleX
             view:setDesignResolutionSize(width, height, cc.ResolutionPolicy.NO_BORDER)
-        elseif r.autoscale == "FIXED_HEIGHT" then
-            width = framesize.width / scaleY
-            height = framesize.height / scaleY
+        elseif r.autoScale == "FIXED_HEIGHT" then
+            width = frameSize.width / scaleY
+            height = frameSize.height / scaleY
             view:setDesignResolutionSize(width, height, cc.ResolutionPolicy.NO_BORDER)
-        elseif r.autoscale == "EXACT_FIT" then
+        elseif r.autoScale == "EXACT_FIT" then
             view:setDesignResolutionSize(r.width, r.height, cc.ResolutionPolicy.EXACT_FIT)
-        elseif r.autoscale == "NO_BORDER" then
+        elseif r.autoScale == "NO_BORDER" then
             view:setDesignResolutionSize(r.width, r.height, cc.ResolutionPolicy.NO_BORDER)
-        elseif r.autoscale == "SHOW_ALL" then
+        elseif r.autoScale == "SHOW_ALL" then
             view:setDesignResolutionSize(r.width, r.height, cc.ResolutionPolicy.SHOW_ALL)
         else
-            printError(string.format("display - invalid r.autoscale \"%s\"", r.autoscale))
+            printError(string.format("display - invalid r.autoScale \"%s\"", r.autoScale))
         end
     end
 end
@@ -139,22 +134,21 @@ local function setConstants()
 end
 
 function display.setAutoScale(configs)
-    framesize = view:getFrameSize()
     if type(configs) ~= "table" then return end
 
     checkResolution(configs)
     if type(configs.callback) == "function" then
-        local c = configs.callback(framesize)
+        local c = configs.callback(frameSize)
         for k, v in pairs(c or {}) do
             configs[k] = v
         end
         checkResolution(configs)
     end
 
-    setDesignResolution(configs, framesize)
+    setDesignResolution(configs, frameSize)
 
     printInfo(string.format("# design resolution size       = {width = %0.2f, height = %0.2f}", configs.width, configs.height))
-    printInfo(string.format("# design resolution autoscale  = %s", configs.autoscale))
+    printInfo(string.format("# design resolution autoScale  = %s", configs.autoScale))
     setConstants()
 end
 
