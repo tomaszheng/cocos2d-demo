@@ -235,3 +235,21 @@ function string.toTable(s)
     end
     return tb
 end
+
+-- 可读的格式化字符串方法
+-- 示例1: string.layout("uri/versions/${cocosProd}-${publishMode}/", "math", "release")
+-- 示例1输出: uri/versions/math-release/
+-- 示例2: string.layout("uri/versions/${cocosProd}-${publishMode}/", {cocosProd = "math", publishMode = "release"})
+-- 示例2输出: uri/versions/math-release/
+function string.layout(pattern, ...)
+    local args = {...}
+    if #args == 1 and type(args[1]) == "table" then
+        args = args[1]
+    end
+
+    local index = 0
+    return string.gsub(pattern, "${([%w_]+)}", function(name)
+        index = index + 1
+        return args[name] or args[index] or name
+    end)
+end
