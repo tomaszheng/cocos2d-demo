@@ -237,10 +237,12 @@ function string.toTable(s)
 end
 
 -- 可读的格式化字符串方法
--- 示例1: string.layout("uri/versions/${cocosProd}-${publishMode}/", "math", "release")
--- 示例1输出: uri/versions/math-release/
--- 示例2: string.layout("uri/versions/${cocosProd}-${publishMode}/", {cocosProd = "math", publishMode = "release"})
--- 示例2输出: uri/versions/math-release/
+-- 示例1: string.layout("uri/cocos/${version}/${lang}/", 4.0, "lua")
+-- 示例1输出: uri/cocos/4/lua/
+-- 示例2: string.layout("uri/cocos/${version}/${lang}/", {version = 4.0, lang = "lua"})
+-- 示例2输出: uri/cocos/4/lua/
+-- 示例3: string.layout("uri/cocos/${version:%.1f}/${lang}/", {version = 4.0, lang = "lua"})
+-- 示例3输出: uri/cocos/4.0/lua/
 function string.layout(pattern, ...)
     local args = {...}
     if #args == 1 and type(args[1]) == "table" then
@@ -248,8 +250,10 @@ function string.layout(pattern, ...)
     end
 
     local index = 0
-    return string.gsub(pattern, "${([%w_]+)}", function(name)
+    return string.gsub(pattern, "${([^{]+)}", function(name)
         index = index + 1
-        return args[name] or args[index] or name
+        local key, fmt = unpack(string.split(name, ":"))
+        local value = args[key] or args[index] or key
+        return fmt and string.format(fmt, value) or value
     end)
 end
