@@ -207,9 +207,9 @@ function string.insert(str, pos, char, isUtf8)
     if pos < 0 then
         pos = pos + len + 1
     elseif pos <= 1 then
-        return string.push(char, str)
+        return string.append(char, str)
     elseif pos > len then
-        return string.push(str, char)
+        return string.append(str, char)
     end
     local slices = {}
     if isUtf8 then
@@ -224,8 +224,17 @@ function string.insert(str, pos, char, isUtf8)
     return table.concat(slices)
 end
 
-function string.push(str, char)
-    return str .. char
+function string.append(...)
+    local strings = {...}
+    return table.concat(strings)
+end
+
+function string.concat(...)
+    local strings, splitter = {...}, ""
+    if #strings > 2 then
+        splitter = table.remove(strings)
+    end
+    return table.concat(strings, splitter)
 end
 
 function string.toTable(s)
