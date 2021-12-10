@@ -250,7 +250,7 @@ function string.layout(pattern, ...)
     end
 
     local index = 0
-    return string.gsub(pattern, "${([^{]+)}", function(name)
+    return string.gsub(pattern, "${([^{}]+)}", function(name)
         index = index + 1
         local key, fmt = unpack(string.split(name, ":"))
         local value = args[key] or args[index] or key
