@@ -36,7 +36,11 @@ display    = require("src.cocos.framework.display")
 transition = require("src.cocos.framework.transition")
 crypto     = require("src.cocos.framework.crypto")
 
-require("src.cocos.framework.extends.NodeEx")
+require("src.cocos.framework.extends.node.NodeEx")
+require("src.cocos.framework.extends.node.NodeTouch")
+require("src.cocos.framework.extends.node.NodeLifecycle")
+require("src.cocos.framework.extends.node.NodeLuaComponent")
+
 require("src.cocos.framework.extends.SpriteEx")
 require("src.cocos.framework.extends.LayerEx")
 require("src.cocos.framework.extends.MenuEx")
