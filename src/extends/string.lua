@@ -117,56 +117,96 @@ local function charSize(ch)
     end
 end
 
-function string.utf8len(str)
-    local len = 0
-    local aNum = 0 --字母个数
-    local hNum = 0 --汉字个数
-    local currentIndex = 1
-    while currentIndex <= #str do
-        local char = string.byte(str, currentIndex)
-        local cs = charSize(char)
-        currentIndex = currentIndex + cs
+--- 返回字符串长度，以utf8格式
+--- @param source string 源字符串
+--- @return number, number 字符串长度，ascii字符个数
+function string.utf8len(source)
+    local len, ascii, currentIndex, total = 0, 0, 1, #source
+    while currentIndex <= total do
+        local size = charSize(string.byte(source, currentIndex))
+        currentIndex = currentIndex + size
         len = len + 1
-        if cs == 1 then
-            aNum = aNum + 1
-        elseif cs >= 2 then
-            hNum = hNum + 1
+        if size == 1 then
+            ascii = ascii + 1
         end
     end
-    return len, aNum, hNum
+    return len, ascii
 end
 
-function string.utf8sub(str, begin, length)
-    local startIndex = 1
-    while begin > 1 do
-        local char = string.byte(str, startIndex)
-        startIndex = startIndex + charSize(char)
-        begin = begin - 1
+--- 以utf8方式截取字符串的一部分
+--- @param source string 原始字符串
+--- @param from number 开始位置
+--- @param len number 截取的长度，以字符记，特殊的：len=0，截取到字符串尾部
+--- @param isBytes boolean begin是否是字节数，默认为false
+function string.utf8sub(source, from, len, isBytes)
+    local byteNum = #source
+    local startIndex, currentIndex = from, from
+    if not isBytes then
+        while from > 1 do
+            local char = string.byte(source, startIndex)
+            startIndex = startIndex + charSize(char)
+            from = from - 1
+        end
+        currentIndex = startIndex
     end
 
-    local currentIndex = startIndex
-
-    while length > 0 and currentIndex <= #str do
-        local char = string.byte(str, currentIndex)
-        currentIndex = currentIndex + charSize(char)
-        length = length - 1
+    if len <= 0 then
+        currentIndex = byteNum + 1
+    else
+        while len > 0 and currentIndex <= byteNum do
+            local char = string.byte(source, currentIndex)
+            currentIndex = currentIndex + charSize(char)
+            len = len - 1
+        end
     end
-    return str:sub(startIndex, currentIndex - 1)
+    local str = source:sub(startIndex, currentIndex - 1)
+    return str, startIndex, currentIndex - 1
 end
 
-function string.utf8slice(str, len)
+function string.utf8slice(source, len)
     len = len or 1
-    local chars = {}
-    for i = 1, math.ceil(string.utf8len(str) / len) do
-        chars[i] = string.utf8sub(str, (i - 1) * len + 1, len)
+    local chars, from, to = {}, 1, 1
+    local num = math.ceil(string.utf8len(source) / len)
+    for i = 1, num do
+        chars[i], from, to = string.utf8sub(source, from, len, true)
+        from = to + 1
     end
     return chars
 end
 
-function string.isAllAscii(str)
-    local currentIndex, len = 1, #str
+function string.utf8delete(source, from, to)
+    local len, head, tail = string.utf8len(source), "", ""
+    from = math.max(from < 0 and from + len + 1 or from, 1)
+    to = math.min(to < 0 and to + len + 1 or to, len)
+    if from > to then
+        from, to = to, from
+    end
+    if from ~= 1 then
+        head = string.utf8sub(source, 1, from - 1)
+    end
+    if to ~= len then
+        tail = string.utf8sub(source, to + 1, len - to + 1)
+    end
+    return head .. tail
+end
+
+function string.utf8insert(source, pos, str)
+    local len = string.utf8len(source)
+    pos = pos < 0 and pos + len + 1 or pos
+    if pos == 1 then
+        return string.append(str, source)
+    elseif pos > len then
+        return string.append(source, str)
+    end
+    local head, _, to = string.utf8sub(source, 1, pos - 1)
+    local tail = string.sub(source, to + 1)
+    return table.concat({ head, str, tail })
+end
+
+function string.isAllAscii(source)
+    local currentIndex, len = 1, #source
     while currentIndex <= len do
-        local byte = string.byte(str, currentIndex)
+        local byte = string.byte(source, currentIndex)
         if byte < 0 or byte > 127 then return false end
         currentIndex = currentIndex + charSize(byte)
     end
@@ -177,51 +217,33 @@ function string.isValid(str)
     return str ~= nil and str ~= ""
 end
 
-function string.delete(str, start, ended, isUtf8)
-    local len = string.utf8len(str)
-    start = math.max(start, 1)
-    ended = math.min(ended, len)
-    if start > ended then
-        start, ended = ended, start
+function string.delete(source, from, to)
+    local len, head, tail = #source, "", ""
+    from = math.max(from < 0 and from + len + 1 or from, 1)
+    to = math.min(to < 0 and to + len + 1 or to, len)
+    if from > to then
+        from, to = to, from
     end
-    local startStr, endedStr = "", ""
-    if start ~= 1 then
-        if isUtf8 then
-            startStr = string.utf8sub(str, 1, start -1 )
-        else
-            startStr = string.sub(str, 1, start - 1)
-        end
+    if from ~= 1 then
+        head = string.sub(source, 1, from - 1)
     end
-    if ended ~= len then
-        if isUtf8 then
-            endedStr = string.utf8sub(str, ended + 1, len - ended + 1)
-        else
-            endedStr = string.sub(str, ended + 1)
-        end
+    if to ~= len then
+        tail = string.sub(source, to + 1)
     end
-    return startStr .. endedStr
+    return head .. tail
 end
 
-function string.insert(str, pos, char, isUtf8)
-    local len = #str
-    if pos < 0 then
-        pos = pos + len + 1
-    elseif pos <= 1 then
-        return string.append(char, str)
+function string.insert(source, pos, str)
+    local len = #source
+    pos = pos < 0 and pos + len + 1 or pos
+    if pos <= 1 then
+        return string.append(str, source)
     elseif pos > len then
-        return string.append(str, char)
+        return string.append(source, str)
     end
-    local slices = {}
-    if isUtf8 then
-        table.insert(slices, string.utf8sub(str, 1, pos - 1))
-        table.insert(slices, char)
-        table.insert(slices, string.utf8sub(str, pos, len - pos + 1))
-    else
-        table.insert(slices, string.sub(str, 1, pos - 1))
-        table.insert(slices, char)
-        table.insert(slices, string.sub(str, pos))
-    end
-    return table.concat(slices)
+    local head = string.sub(source, 1, pos - 1)
+    local tail = string.sub(source, pos)
+    return table.concat({head, str, tail})
 end
 
 function string.append(...)
@@ -237,12 +259,22 @@ function string.concat(...)
     return table.concat(strings, splitter)
 end
 
-function string.toTable(s)
-    local tb = {}
-    for utfChar in string.gmatch(s, "[%z\1-\127\194-\244][\128-\191]*") do
-        table.insert(tb, utfChar)
+function string.slice(source, len)
+    len = len or 1
+    local patterns, pattern = {}, "[%z\1-\127\194-\244][\128-\191]*"
+    for _ = 1, len do
+        table.insert(patterns, pattern)
     end
-    return tb
+    pattern = table.concat(patterns)
+    local ret, n = {}, 0
+    string.gsub(source, pattern, function(str)
+        n = n + #str
+        table.insert(ret, str)
+    end)
+    if n < #source then
+        table.insert(ret, string.sub(source, n + 1))
+    end
+    return ret
 end
 
 -- 可读的格式化字符串方法
