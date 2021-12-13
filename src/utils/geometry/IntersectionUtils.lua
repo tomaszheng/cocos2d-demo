@@ -3,46 +3,36 @@
 --- Created by tomas.
 --- DateTime: 2021/6/2 15:19
 ---
-local M = {}
+local IntersectionUtils = {}
 
-function M.pointLineDistance(point, startP, endP, isSegment)
-    local dx = endP.x - startP.x
-    local dy = endP.y - startP.y
-    local d = dx * dx + dy * dy
-    local t = ((point.x - startP.x) * dx + (point.y - startP.y) * dy) / d
-    local p
+function IntersectionUtils.isCollinear(p, c, n)
+    return math.abs(cc.pCross(cc.pSub(p, c), cc.pSub(n, c))) < GeometryConstants.EPS_S
+end
 
-    if not isSegment then
-        p = cc.p(startP.x + t * dx, startP.y + t * dy)
-    else
-        if (d) then
-            if (t < 0) then
-                p = startP
-            elseif (t > 1) then
-                p = endP
-            else
-                p = cc.p(startP.x + t * dx, startP.y + t * dy)
-            end
-        else
-            p = startP
-        end
+function IntersectionUtils.pInLine(p, began, ended)
+    if IntersectionUtils.isCollinear(p, began, ended) then
+        return cc.pDot(cc.pSub(p, began), cc.pSub(ended, began)) * cc.pDot(cc.pSub(p, ended), cc.pSub(began, ended)) >= 0
     end
-
-    dx = point.x - p.x
-    dy = point.y - p.y
-    return math.sqrt(dx * dx + dy * dy)
+    return false
 end
 
---- 求过点p的直线，与圆的切点
-function M.pointOfTangency(center, radius, p)
-    local distance = cc.pGetDistance(center, p)
-    local rad = math.asin(radius / distance)
-    local len = math.cos(rad) * distance
-    local normal = cc.pNormalize(cc.pSub(center, p))
-    local dummy = cc.pAdd(p, cc.pMul(normal, len))
-    local point1 = cc.pRotateByAngle(dummy, p, rad)
-    local point2 = cc.pRotateByAngle(dummy, p, -rad)
-    return point1, point2
+--- 判断点是否在多边形内
+--- @param polygon array 描述一个多边形，逆时针序
+function IntersectionUtils.pInPolygon(p, polygon)
+    local len, lastDirection = #polygon, 1
+    for i = 1, len do
+        local c = polygon[i]
+        local n = polygon[i % len + 1]
+        local direction = cc.pCross(cc.pSub(c, p), cc.pSub(n, p))
+        if math.abs(direction) < GeometryConstants.EPS_S then
+            return IntersectionUtils.pInLine(p, c, n)
+        end
+        if lastDirection * direction < 0 then
+            return false
+        end
+        lastDirection = direction
+    end
+    return true
 end
 
-return M
+return IntersectionUtils

@@ -7,6 +7,12 @@ local GeometryConstants = {}
 
 GeometryConstants.PI = 2 * math.asin(1.0)
 
+GeometryConstants.EPS = 0.05
+GeometryConstants.EPS_X = 0.005
+GeometryConstants.EPS_L = 0.0005
+GeometryConstants.EPS_M = 0.00005
+GeometryConstants.EPS_S = 0.000005
+
 GeometryConstants.SHAPE = {
     UNKNOWN     = 0,
     POINT       = 1,

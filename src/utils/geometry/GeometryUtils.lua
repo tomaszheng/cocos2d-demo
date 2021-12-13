@@ -3,6 +3,124 @@
 --- Created by tomas.
 --- DateTime: 2021/6/2 15:17
 ---
-local M = {}
+local GeometryUtils = {}
 
-return M
+function GeometryUtils.dirCmp(v, eps)
+    eps = eps or GeometryConstants.EPS_S
+    if math.abs(v) <= eps then
+        return 0
+    end
+    return v > eps and 1 or -1
+end
+
+---三角化多边形
+---@param polygon array 多边形点序列，逆时针序
+function GeometryUtils.triangulate(polygon)
+    local triangles = {}
+    local len, beganIndex = #polygon, 1
+    while (len > 3) do
+        local c = GeometryUtils.getConvexIndex(polygon, beganIndex)
+        local p, n = (c + len - 2) % len + 1, c % len + 1
+        local contained = false
+        for i = 1, len do
+            if i ~= p and i ~= c and i ~= n then
+                if IntersectionUtils.pInPolygon(polygon[i], { polygon[p], polygon[c], polygon[n]}) then
+                    contained = true
+                    break
+                end
+            end
+        end
+        if not contained then
+            table.insert(triangles, { polygon[p], polygon[c], polygon[n]})
+            table.remove(polygon, c)
+            beganIndex = c
+        elseif IntersectionUtils.isCollinear(polygon[p], polygon[c], polygon[n]) then
+            table.remove(polygon, c)
+            beganIndex = c
+        else
+            beganIndex = beganIndex % len + 1
+        end
+        len = #polygon
+    end
+    table.insert(triangles, { polygon[1], polygon[2], polygon[3]})
+    return triangles
+end
+
+---获取多边形的凸点
+---@param polygon array 多边形点序列，逆时针序
+---@param beganIndex number 起始编号
+function GeometryUtils.getConvexIndex(polygon, beganIndex)
+    beganIndex = beganIndex or 1
+    local len = #polygon
+    -- p, c, n: previous, current, next
+    for i = 1, len do
+        local c = (beganIndex + i - 2) % len + 1
+        local p = (c + len - 2) % len + 1
+        local n = c % len + 1
+        if cc.pCross(cc.pSub(polygon[n], polygon[c]), cc.pSub(polygon[p], polygon[c])) > 0 then
+            return c
+        end
+    end
+    return 1
+end
+
+---切割多边形，采用Sutherland-Hodgman算法
+---@param polygon array 多边形点序列，逆时针序
+---@param began Vec2 线的起始点
+---@param ended Vec2 线的终点
+function GeometryUtils.split(polygon, began, ended)
+    local len = #polygon
+    local leftPoints, rightPoints = {}, {}
+    table.foreach(polygon, function(c)
+        local p = (c - 2 + len) % len + 1
+        local pCross = GeometryUtils.dirCmp(cc.pCross(cc.pSub(polygon[p], began), cc.pSub(ended, began)))
+        local cCross = GeometryUtils.dirCmp(cc.pCross(cc.pSub(polygon[c], began), cc.pSub(ended, began)))
+        if pCross <= 0 then
+            table.insert(leftPoints, polygon[p])
+        end
+        if pCross * cCross < 0 then
+            local intersection = cc.pGetIntersectPoint(polygon[p], polygon[c], began, ended)
+            table.insert(rightPoints, intersection)
+            table.insert(leftPoints, intersection)
+        end
+        if cCross >= 0 then
+            table.insert(rightPoints, polygon[c])
+        end
+    end)
+    return leftPoints, rightPoints
+end
+
+---删除多边形中无效的顶点，角度为0的顶点被认为是无效顶点
+---@param polygon  array 多边形点序列，逆时针序
+function GeometryUtils.removeInvalidPoint(polygon)
+    local len = #polygon
+    local p, c, n = -1, 1, -1
+    while(c <= len) do
+        p = (c - 2 + len) % len + 1
+        n = c % len + 1
+        local vpc = cc.pNormalize(cc.pSub(polygon[p], polygon[c]))
+        local vpn = cc.pNormalize(cc.pSub(polygon[n], polygon[c]))
+        if cc.pDot(vpc, vpn) >= 1 - GeometryConstants.EPS_S then
+            table.remove(polygon, c)
+        else
+            c = c + 1
+        end
+    end
+end
+
+---求过点p的直线，与圆的切点
+---@param center Vec2 圆的中心
+---@param radius number 圆的半径
+---@param p Vec2
+function GeometryUtils.pointOfTangency(center, radius, p)
+    local distance = cc.pGetDistance(center, p)
+    local rad = math.asin(radius / distance)
+    local len = math.cos(rad) * distance
+    local normal = cc.pNormalize(cc.pSub(center, p))
+    local dummy = cc.pAdd(p, cc.pMul(normal, len))
+    local point1 = cc.pRotateByAngle(dummy, p, rad)
+    local point2 = cc.pRotateByAngle(dummy, p, -rad)
+    return point1, point2
+end
+
+return GeometryUtils
