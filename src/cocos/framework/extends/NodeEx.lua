@@ -24,22 +24,22 @@ THE SOFTWARE.
 
 local Node = cc.Node
 
-function Node:add(child, zorder, tag)
+function Node:add(child, zOrder, tag)
     if tag then
-        self:addChild(child, zorder, tag)
-    elseif zorder then
-        self:addChild(child, zorder)
+        self:addChild(child, zOrder, tag)
+    elseif zOrder then
+        self:addChild(child, zOrder)
     else
         self:addChild(child)
     end
     return self
 end
 
-function Node:addTo(parent, zorder, tag)
+function Node:addTo(parent, zOrder, tag)
     if tag then
-        parent:addChild(self, zorder, tag)
-    elseif zorder then
-        parent:addChild(self, zorder)
+        parent:addChild(self, zOrder, tag)
+    elseif zOrder then
+        parent:addChild(self, zOrder)
     else
         parent:addChild(self)
     end
@@ -114,9 +114,8 @@ function Node:center()
     return cc.p(size.width / 2, size.height / 2)
 end
 
-function Node:moveCenter(parent)
-    parent = parent or self:getParent()
-    self:move(parent:center())
+function Node:moveCenter()
+    self:move(self:getParent():center())
     return self
 end
 
@@ -357,48 +356,46 @@ function Node:onCleanup_()
     self:onCleanupCallback_()
 end
 
-function Node:addTouchEvent(funcBegan, funcMoved, funcEnded, funcCancelled)
-    local listener = cc.EventListenerTouchOneByOne:create();
-    if funcBegan then
-        listener:registerScriptHandler(funcBegan, cc.Handler.EVENT_TOUCH_BEGAN);
+function Node:addTouchEvent(options)
+    options = options or {}
+    local onBegan, onMoved, onEnded, onCanceled = options.onBegan, options.onMoved, options.onEnded, options.onCanceled
+
+    local listener = self.__listener__
+    if not self.__listener__ or type(self.__listener__) ~= "userdata" then
+        onBegan = onBegan or function(touch)
+            return cc.rectContainsPoint(self:getBoundingBox(), self:getParent():convertToNodeSpace(touch:getLocation()))
+        end
+        listener = cc.EventListenerTouchOneByOne:create()
     end
 
-    funcMoved = funcMoved or funcBegan
-    if funcMoved then
-        listener:registerScriptHandler(funcMoved, cc.Handler.EVENT_TOUCH_MOVED);
+    if onBegan and type(onBegan) == "function" then
+        listener:registerScriptHandler(onBegan, cc.Handler.EVENT_TOUCH_BEGAN)
+    end
+    if onMoved and type(onMoved) == "function" then
+        listener:registerScriptHandler(onMoved, cc.Handler.EVENT_TOUCH_MOVED)
+    end
+    if onEnded and type(onEnded) == "function" then
+        listener:registerScriptHandler(onEnded, cc.Handler.EVENT_TOUCH_ENDED)
+    end
+    if onCanceled and type(onCanceled) == "function" then
+        listener:registerScriptHandler(onCanceled, cc.Handler.EVENT_TOUCH_CANCELLED)
     end
 
-    funcEnded = funcEnded or funcBegan
-    if funcEnded then
-        listener:registerScriptHandler(funcEnded, cc.Handler.EVENT_TOUCH_ENDED);
+    if not self.__listener__ or type(self.__listener__) ~= "userdata" then
+        self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
     end
 
-    funcCancelled = funcCancelled or funcBegan
-    if funcCancelled then
-        listener:registerScriptHandler(funcCancelled, cc.Handler.EVENT_TOUCH_CANCELLED);
-    end
-
-    local eventDispatcher = self:getEventDispatcher();
-    if self.__listener__  and type(self.__listener__) == "userdata" then
-        eventDispatcher:removeEventListener(self.__listener__)
-        self.__listener__ = nil
-    end
-    eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self);
-    self.__listener__ = listener
     return listener
 end
 
---@summary 移除node上的EventListener
---@summary 增加EventListener之前先把以前绑定的EventListener取消注册
 function Node:removeTouchEvent()
-    local eventDispatcher = self:getEventDispatcher();
     local listener = self.__listener__
-    if listener  and type(listener) == "userdata" then
-        eventDispatcher:removeEventListener(listener)
+    if listener and type(listener) == "userdata" then
+        self:getEventDispatcher():removeEventListener(listener)
         self.__listener__ = nil
     end
-    
 end
+
 function Node:isAncestorsVisible()
     local node = self
     while (node) do
