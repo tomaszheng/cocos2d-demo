@@ -84,7 +84,7 @@ end
 
 function RubberBand:onTouchBegan(touch)
     local position = self:convertToNodeSpaceAR(touch:getLocation())
-    local distance = IntersectionUtils.pointLineDistance(position, self.startPoint, self.endPoint)
+    local distance = GeometryUtils.pointLineDistance(position, self.startPoint, self.endPoint)
     return distance < TOUCH_RADIUS
 end
 
@@ -139,14 +139,14 @@ function RubberBand:stretch(point, isFromTouchEnded)
 end
 
 function RubberBand:getTangencyOfStartPoint(centerPoint)
-    local point1, point2 = IntersectionUtils.pointOfTangency(centerPoint, FINGER_WIDTH, self.startPoint)
+    local point1, point2 = GeometryUtils.pointOfTangency(centerPoint, FINGER_WIDTH, self.startPoint)
     local distance1 = cc.pGetDistance(point1, self.endPoint)
     local distance2 = cc.pGetDistance(point2, self.endPoint)
     return distance1 > distance2 and point1 or point2
 end
 
 function RubberBand:getTangencyOfEndPoint(centerPoint)
-    local point1, point2 = IntersectionUtils.pointOfTangency(centerPoint, FINGER_WIDTH, self.endPoint)
+    local point1, point2 = GeometryUtils.pointOfTangency(centerPoint, FINGER_WIDTH, self.endPoint)
     local distance1 = cc.pGetDistance(point1, self.startPoint)
     local distance2 = cc.pGetDistance(point2, self.startPoint)
     return distance1 > distance2 and point1 or point2

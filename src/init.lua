@@ -28,14 +28,14 @@ EventManager = require("src.managers.EventManager")
 UIUtils = require("src.utils.UIUtils")
 ShotUtils = require("src.utils.ShotUtils")
 GeometryConstants = require 'src.utils.geometry.GeometryConstants'
-IntersectionUtils = require 'src.utils.geometry.IntersectionUtils'
+GeometryUtils = require('src.utils.geometry.GeometryUtils')
+DistanceUtils = require('src.utils.geometry.DistanceUtils')
+IntersectionUtils = require('src.utils.geometry.IntersectionUtils')
 
 -- components
-Outline = require("src.components.shaders.Outline")
-Blur = require("src.components.shaders.Blur")
 
 -- widgets
-GraphicsNode = require 'src.widgets.GraphicsNode'
-RubberBand = require 'src.widgets.RubberBand'
+GraphicsNode = require('src.widgets.GraphicsNode')
+RubberBand = require('src.widgets.RubberBand')
 
 cc.disable_global()
