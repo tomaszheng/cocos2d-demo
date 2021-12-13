@@ -8,23 +8,24 @@ local Node = cc.Node
 local __listenerId__ = 0
 
 function Node:addTouchEvent(options)
+    options = options or {}
+    __listenerId__ = __listenerId__ + 1
+
     self:addTouchEvent_()
 
-    options = options or {}
-    options.onBegan = options.onBegan or function()
-        return true
-    end
-
-    __listenerId__ = __listenerId__ + 1
-    self.__touchCallbacks[__listenerId__] = options
+    self.touchCallbacks_[__listenerId__] = {
+        onBegan = options.onBegan, onMoved = options.onMoved,
+        onEnded = options.onEnded, onCanceled = options.onCanceled,
+        listenerId = __listenerId__
+    }
 
     return __listenerId__
 end
 
 function Node:addTouchEvent_()
-    if self.__listener__ and type(self.__listener__) == "userdata" then return end
+    if self.listener_ and type(self.listener_) == "userdata" then return end
 
-    self.__touchCallbacks = {}
+    self.touchCallbacks_ = {}
 
     local listener = cc.EventListenerTouchOneByOne:create()
     listener:registerScriptHandler(handler(self, self.onTouchBegan_), cc.Handler.EVENT_TOUCH_BEGAN)
@@ -32,17 +33,20 @@ function Node:addTouchEvent_()
     listener:registerScriptHandler(handler(self, self.onTouchEnded_), cc.Handler.EVENT_TOUCH_ENDED)
     listener:registerScriptHandler(handler(self, self.onTouchCanceled_), cc.Handler.EVENT_TOUCH_CANCELLED)
 
+    self.listener_ = listener
+
     self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 end
 
 function Node:onTouchBegan_(touch)
-    table.walk(self.__touchCallbacks, function(callbacks)
+    table.walk(self.touchCallbacks_, function(callbacks)
         callbacks.isValid = doCallback(callbacks.onBegan, touch)
     end)
+    return true
 end
 
 function Node:onTouchMoved_(touch)
-    table.walk(self.__touchCallbacks, function(callbacks)
+    table.walk(self.touchCallbacks_, function(callbacks)
         if callbacks.isValid then
             doCallback(callbacks.onMoved, touch)
         end
@@ -50,7 +54,7 @@ function Node:onTouchMoved_(touch)
 end
 
 function Node:onTouchEnded_(touch)
-    table.walk(self.__touchCallbacks, function(callbacks)
+    table.walk(self.touchCallbacks_, function(callbacks)
         if callbacks.isValid then
             doCallback(callbacks.onEnded, touch)
         end
@@ -58,7 +62,7 @@ function Node:onTouchEnded_(touch)
 end
 
 function Node:onTouchCanceled_(touch)
-    table.walk(self.__touchCallbacks, function(callbacks)
+    table.walk(self.touchCallbacks_, function(callbacks)
         if callbacks.isValid then
             doCallback(callbacks.onCanceled, touch)
         end
@@ -67,13 +71,13 @@ end
 
 function Node:removeTouchEvent(listenerId)
     if listenerId then
-        self.__touchCallbacks[listenerId] = nil
+        self.touchCallbacks_[listenerId] = nil
     else
-        self.__touchCallbacks = {}
-        local listener = self.__listener__
+        self.touchCallbacks_ = {}
+        local listener = self.listener_
         if listener and type(listener) == "userdata" then
             self:getEventDispatcher():removeEventListener(listener)
-            self.__listener__ = nil
+            self.listener_ = nil
         end
     end
 end

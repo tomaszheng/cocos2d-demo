@@ -33,7 +33,7 @@ end
 
 function doCallback(func, ...)
     if type(func) == "function" then
-        func(...)
+        return func(...)
     end
 end
 
