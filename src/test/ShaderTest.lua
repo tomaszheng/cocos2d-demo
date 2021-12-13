@@ -3,11 +3,15 @@
 --- Created by tomas.
 --- DateTime: 2021/12/3 9:58
 ---
+local Blur = require("src.components.shaders.Blur")
+local Outline = require("src.components.shaders.Outline")
+local Brightness = require("src.components.shaders.Brightness")
 local ShaderTest = class("ShaderTest", BaseNode)
 
 function ShaderTest:ctor()
-    self:testOutline()
-    self:testBlur()
+    --self:testOutline()
+    --self:testBlur()
+    self:testBrightness()
 end
 
 function ShaderTest:testOutline()
@@ -51,6 +55,39 @@ function ShaderTest:testBlur()
         sampleNum = 5,
         blurType = Blur.BLUR_TYPE.GAUSSIAN,
         radius = 7
+    })
+end
+
+function ShaderTest:testBrightness()
+    local pos = cc.p(100, 700)
+    local avatar = cc.Sprite:create("res/bg_avatar_default.png")
+                      :move(pos)
+                      :addTo(self)
+    avatar:addLuaComponent(Brightness, {
+        brightness = 0.8,
+    })
+
+    local rect = avatar:getBoundingBox()
+    local maxDistance =  500
+    avatar:addTouchEvent({
+        onBegan = function()
+            return true
+        end,
+        onMoved = function(touch)
+            local distance = DistanceUtils.pToRect(touch:getLocation(), rect)
+            local brightness = 0.5
+            if distance < maxDistance then
+                brightness = (maxDistance - distance) / maxDistance
+            end
+            brightness = cc.clampf(brightness, 0.5, 1.0)
+            avatar:getLuaComponent(Brightness):setBrightness(brightness)
+        end
+    })
+
+    avatar:addTouchEvent({
+        onEnded = function(touch)
+            print("on ended")
+        end
     })
 end
 
