@@ -68,11 +68,10 @@ function Clickable:initData(data)
 
     self.touchable = self.node:getLuaComponent(Touchable)
     if not self.touchable then
-        self.touchable = self.node:addLuaComponent(Touchable, self.node, {
+        self.touchable = self.node:addLuaComponent(Touchable, {
             shape = data.shape,
             isLongTouchEnabled = self.type == Clickable.TYPES.LONG_TOUCH,
             longTouchThreshold = data.longTouchThreshold,
-            onLongTouch = data.onLongTouch
         })
     end
 
@@ -116,7 +115,7 @@ end
 function Clickable:onLongTouch(event)
     local position, isHit = event.position, event.isHit
     if isHit and not self:isClickLimiting() then
-        self:dispatchEvent({ name = Clickable.ON_LONG_TOUCH, sender = self, position = position})
+        self:dispatchEvent({name = Clickable.ON_LONG_TOUCH, sender = self, position = position})
         doCallback(self.onLongTouchFunc, {sender = self, position = position})
     end
 end

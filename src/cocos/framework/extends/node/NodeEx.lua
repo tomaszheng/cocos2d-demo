@@ -234,21 +234,21 @@ function Node:convertRectToNodeSpace(rect)
 end
 
 function Node:delayAction(callback, delay)
-    self:runAction(cc.Sequence:create(cc.DelayTime:create(delay or 0), cc.CallFunc:create(function()
+    return self:runAction(cc.Sequence:create(cc.DelayTime:create(delay or 0), cc.CallFunc:create(function()
         doCallback(callback)
     end)))
 end
 
 function Node:repeatAction(callback, delay, num)
     if num and type(num) == "number" then
-        self:runAction(cc.Repeat:create(cc.Sequence:create(
+        return self:runAction(cc.Repeat:create(cc.Sequence:create(
                 cc.CallFunc:create(function()
                     num = num - 1
                     doCallback(callback, num)
                 end), cc.DelayTime:create(delay)
         )), num)
     else
-        self:runAction(cc.RepeatForever:create(cc.Sequence:create(
+        return self:runAction(cc.RepeatForever:create(cc.Sequence:create(
                 cc.CallFunc:create(callback), cc.DelayTime:create(delay)
         )))
     end

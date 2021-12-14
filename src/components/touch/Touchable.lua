@@ -48,12 +48,11 @@ end
 function Touchable:onTouchBegan(touch)
     local position = touch:getLocation()
     local isHit = self:isHit(position)
+    self.touchBeganPosition, self.touchCurrPosition = position, position
     if isHit then
         self:dispatchEvent({name = Touchable.ON_BEGAN, sender = self, position = position})
+        self:startLongTouchTimer()
     end
-
-    self.touchBeganPosition, self.touchCurrPosition = position, position
-
     return isHit
 end
 
@@ -95,7 +94,7 @@ end
 
 function Touchable:onLongTouch()
     local position = self.touchCurrPosition
-    local isHit = self.touchable:isHit(position)
+    local isHit = self:isHit(position)
 
     self:dispatchEvent({name = Touchable.ON_LONG_TOUCH, sender = self, isHit = isHit, position = position})
     doCallback(self.onLongTouchFunc, {sender = self, isHit = isHit, position = position})
