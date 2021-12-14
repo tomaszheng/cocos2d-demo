@@ -4,7 +4,7 @@
 --- DateTime: 2021/12/14 10:30
 --- Content: 点击组件
 ---
-local Touchable = require("src.components.Touchable")
+local Touchable = require("src.components.touch.Touchable")
 local Clickable = class("Clickable", BaseComponent)
 
 Clickable.STYLES = {
@@ -12,6 +12,12 @@ Clickable.STYLES = {
     COLOR   = 'color',
     SCALE   = 'scale',
     IMAGE   = 'image'
+}
+
+Clickable.TYPES = {
+    CLICK = 'click',
+    DOUBLE = 'double-click',
+    LONG_TOUCH = 'long-touch'
 }
 
 Clickable.STATUS = {
@@ -34,6 +40,9 @@ function Clickable:ctor(node, data)
 end
 
 function Clickable:initData(data)
+    data = data or {}
+    -- 响应类型
+    self.type = data.type or Clickable.TYPES.CLICK
     -- 按下效果
     self.style = data.style or Clickable.STYLES.NONE
     -- 按下缩放系数
@@ -48,25 +57,32 @@ function Clickable:initData(data)
     -- 两次按下是否有时间间隔
     self.isIntervalLimit = data.isIntervalLimit or false
     self.intervalThreshold = data.intervalThreshold or 0.5
+    -- 触发长按的时间阈值
+    self.longTouchThreshold = data.longTouchThreshold or 0.5
     -- 响应限制方法
     self.onLimitFunc = data.onLimit
-    --touch的各个阶段
+    -- touch的各个阶段
     self.onBeganFunc, self.onMovedFunc = data.onBegan, data.onMoved
     self.onEndedFunc, self.onCanceledFunc = data.onEnded, data.onCanceled
-    self.onClickFunc = data.onClick
+    self.onClickFunc, self.onLongTouchFunc = data.onClick, data.onLongTouch
 
     self.touchable = self.node:getLuaComponent(Touchable)
     if not self.touchable then
         self.touchable = self.node:addLuaComponent(Touchable, self.node, {
-            shape = data.shape
+            shape = data.shape,
+            isLongTouchEnabled = self.type == Clickable.TYPES.LONG_TOUCH,
+            longTouchThreshold = data.longTouchThreshold,
+            onLongTouch = data.onLongTouch
         })
     end
 
     self.prevClickTime = 0
     self.touchBeganPosition = cc.p(0, 0)
+    self.touchCurrPosition = cc.p(0, 0)
     self.defaultScale = self.node:getScale()
     self.defaultColor = self.node:getColor()
     self.action = nil
+    self.longTouchTimer = nil
 end
 
 function Clickable:initListener()
@@ -74,13 +90,13 @@ function Clickable:initListener()
     self.touchable:addEventListener(Touchable.ON_MOVED, handler(self, self.onTouchMoved))
     self.touchable:addEventListener(Touchable.ON_ENDED, handler(self, self.onTouchEnded))
     self.touchable:addEventListener(Touchable.ON_CANCELED, handler(self, self.onTouchCanceled))
+    self.touchable:addEventListener(Touchable.ON_LONG_TOUCH, handler(self, self.onLongTouch))
     self.touchable:addEventListener(Touchable.ON_DESTROY, handler(self, self.onTouchDestroy))
 end
 
 function Clickable:onTouchBegan(event)
     self:resetToDefault()
 
-    local touch = event.touch
     if self.style == Clickable.STYLES.COLOR then
         self.node:setColor(self.color)
     elseif self.style == Clickable.STYLES.SCALE then
@@ -89,44 +105,56 @@ function Clickable:onTouchBegan(event)
         self:updateTexture(Clickable.STATUS.PRESS)
     end
 
-    self.touchBeganPosition = touch:getLocation()
+    local position = event.position
+    self.touchBeganPosition = position
+    self.touchCurrPosition = position
 
-    self:dispatchEvent({name = Clickable.ON_BEGAN, sender = self, touch = touch})
-    doCallback(self.onBeganFunc, {sender = self, touch = touch})
+    self:dispatchEvent({name = Clickable.ON_BEGAN, sender = self, position = position})
+    doCallback(self.onBeganFunc, {sender = self, position = position})
+end
+
+function Clickable:onLongTouch(event)
+    local position, isHit = event.position, event.isHit
+    if isHit and not self:isClickLimiting() then
+        self:dispatchEvent({ name = Clickable.ON_LONG_TOUCH, sender = self, position = position})
+        doCallback(self.onLongTouchFunc, {sender = self, position = position})
+    end
 end
 
 function Clickable:onTouchMoved(event)
-    local touch = event.touch
-    self:dispatchEvent({name = Clickable.ON_MOVED, sender = self, touch = touch})
-    doCallback(self.onMovedFunc, {sender = self, touch = touch})
+    local position = event.position
+    self.touchCurrPosition = event.position
+
+    self:dispatchEvent({name = Clickable.ON_MOVED, sender = self, position = position})
+    doCallback(self.onMovedFunc, {sender = self, position = position})
 end
 
 function Clickable:onTouchEnded(event)
     self:resetToDefault(false)
 
-    local touch, isHit = event.touch, event.isHit
-    local isValid = false
+    local position, isHit, isValid = event.position, event.isHit, false
+    self.touchCurrPosition = position
+
     if isHit then
-        if not self:isClickLimiting(touch) then
+        if not self:isClickLimiting() then
             isValid = true
         end
     end
 
-    self.prevClickTime = os.clock()
-
     if isValid then
-        self:dispatchEvent({name = Clickable.ON_CLICK, sender = self, touch = touch})
-        doCallback(self.onClickFunc, {sender = self, touch = touch})
+        self.prevClickTime = os.clock()
+        self:dispatchEvent({name = Clickable.ON_CLICK, sender = self, position = position})
+        doCallback(self.onClickFunc, {sender = self, position = position})
     end
 
-    self:dispatchEvent({name = Clickable.ON_ENDED, sender = self, touch = touch, isValid = isValid})
-    doCallback(self.onEndedFunc, {sender = self, touch = touch, isValid = isValid})
+    self:dispatchEvent({name = Clickable.ON_ENDED, sender = self, position = position, isValid = isValid})
+    doCallback(self.onEndedFunc, {sender = self, position = position, isValid = isValid})
 end
 
 function Clickable:onTouchCanceled()
     self:resetToDefault(false)
 
-    self:dispatchEvent({name = Clickable.ON_CANCELED, sender = self})
+    self:dispatchEvent({ name = Clickable.ON_CANCELED, sender = self})
     doCallback(self.onCanceledFunc, {sender = self})
 end
 
@@ -134,20 +162,20 @@ function Clickable:onTouchDestroy()
     self:destroy()
 end
 
-function Clickable:isClickLimiting(touch)
+function Clickable:isClickLimiting()
     if self.isIntervalLimit then
         if os.clock() - self.prevClickTime < self.intervalThreshold then
             return true
         end
     end
     if self.isMoveLimit then
-        local distance = cc.pGetDistance(self.touchBeganPosition, touch:getLocation())
+        local distance = cc.pGetDistance(self.touchBeganPosition, self.touchCurrPosition)
         if distance > self.moveThreshold then
             return true
         end
     end
     if self.onLimitFunc then
-        return doCallback(self.onLimitFunc, touch)
+        return doCallback(self.onLimitFunc, self.touchCurrPosition)
     end
     return false
 end
@@ -223,7 +251,8 @@ function Clickable:setOnCanceled(func)
 end
 
 function Clickable:onDestroy()
-    self:dispatchEvent(Clickable.ON_DESTROY)
+    self:stopAction()
+    self:dispatchEvent({name = Clickable.ON_DESTROY})
 end
 
 return Clickable
