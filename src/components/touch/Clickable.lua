@@ -135,13 +135,8 @@ function Clickable:onTouchEnded(event)
     local position, isHit, isValid = event.position, event.isHit, false
     self.touchCurrPosition = position
 
-    if isHit then
-        if not self:isClickLimiting() then
-            isValid = true
-        end
-    end
-
-    if isValid then
+    if isHit and not self:isClickLimiting() then
+        isValid = true
         self.prevClickTime = os.clock()
         self:dispatchEvent({name = Clickable.ON_CLICK, sender = self, position = position})
         doCallback(self.onClickFunc, {sender = self, position = position})
