@@ -9,6 +9,13 @@ function UIUtils.center(size)
     return cc.p(size.width / 2, size.height / 2)
 end
 
+function UIUtils.getTextureResType(path)
+    if cc.SpriteFrameCache:getInstance():getSpriteFrame(path) then
+        return ccui.TextureResType.plistType
+    end
+    return ccui.TextureResType.localType
+end
+
 local __debugNodeIncrementalRGB = 1
 function UIUtils.debug(target, isCascade)
     __debugNodeIncrementalRGB = (__debugNodeIncrementalRGB * 43897) % 0xffffff

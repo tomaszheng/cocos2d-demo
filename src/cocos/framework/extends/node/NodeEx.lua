@@ -260,7 +260,7 @@ function Node:isAncestorsVisible()
         if not node:isVisible() then
             return false
         end
-        node = self:getParent()
+        node = node:getParent()
     end
     return true
 end
