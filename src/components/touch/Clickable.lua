@@ -16,13 +16,12 @@ Clickable.STYLES = {
 
 Clickable.TYPES = {
     CLICK = 'click',
-    DOUBLE = 'double-click',
     LONG_TOUCH = 'long-touch'
 }
 
 Clickable.STATUS = {
     NORMAL = 'normal',
-    PRESS = 'press'
+    PRESSED = 'pressed'
 }
 
 Clickable.ON_BEGAN = "on-began"
@@ -49,7 +48,7 @@ function Clickable:initData(data)
     self.scale = data.scale or 1.1
     -- 按下换颜色
     self.color = type(data.color) == "number" and hexColor(data.color) or data.color or hexColor(0xeeeeee)
-    -- 按下换图片
+    -- 按下换图片, key是Clickable.STATUS
     self.images = data.images or {}
     -- 按下有位移，是否可以响应
     self.isMoveLimit = data.isMoveLimit or false
@@ -81,7 +80,6 @@ function Clickable:initData(data)
     self.defaultScale = self.node:getScale()
     self.defaultColor = self.node:getColor()
     self.action = nil
-    self.longTouchTimer = nil
 end
 
 function Clickable:initListener()
@@ -101,7 +99,7 @@ function Clickable:onTouchBegan(event)
     elseif self.style == Clickable.STYLES.SCALE then
         self.action = self.node:runAction(cc.EaseSineOut:create(cc.ScaleTo:create(0.15, self.defaultScale * self.scale)))
     elseif self.style == Clickable.STYLES.IMAGE then
-        self:updateTexture(Clickable.STATUS.PRESS)
+        self:updateTexture(Clickable.STATUS.PRESSED)
     end
 
     local position = event.position
@@ -190,7 +188,9 @@ function Clickable:resetToDefault(isFromBegin)
 end
 
 function Clickable:updateTexture(status)
-    local path = status == Clickable.STATUS.NORMAL and self.images[1] or self.images[2]
+    local path = self.images[status]
+    if not string.isValid(path) then return end
+
     local resType = UIUtils.getTextureResType(path)
     if iskindof(self.node, "cc.Sprite") then
         if resType == ccui.TextureResType.localType then

@@ -101,7 +101,6 @@ end
 function Touchable:onLongTouch()
     local position = self.touchCurrPosition
     local isHit = self:isHit(position)
-
     self:dispatchEvent({name = Touchable.ON_LONG_TOUCH, sender = self, isHit = isHit, position = position})
     doCallback(self.onLongTouchFunc, {sender = self, isHit = isHit, position = position})
 end
