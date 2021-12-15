@@ -218,6 +218,13 @@ function Clickable:resetToDefault(isFromBegin)
     end
 end
 
+--- 由于一些原因，node的默认值可能会发生变化，因此需要更新默认值
+function Clickable:updateDefault()
+    self:stopAction()
+    self.defaultColor = self.node:getColor()
+    self.defaultScale = self.node:getScale()
+end
+
 function Clickable:updateTexture(status)
     local path = self.images[status]
     if not string.isValid(path) then return end
