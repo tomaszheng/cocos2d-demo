@@ -28,7 +28,9 @@ function Touchable:initData(data)
     self.isLongTouchEnabled = data.isLongTouchEnabled or false
     -- 触发长按的时间阈值
     self.longTouchThreshold = data.longTouchThreshold or 0.5
-    -- 长按触发func
+    -- touch的各个阶段
+    self.onBeganFunc, self.onMovedFunc = data.onBegan, data.onMoved
+    self.onEndedFunc, self.onCanceledFunc = data.onEnded, data.onCanceled
     self.onLongTouchFunc = data.onLongTouch
 
     self.longTouchTimer = nil
@@ -51,6 +53,7 @@ function Touchable:onTouchBegan(touch)
     self.touchBeganPosition, self.touchCurrPosition = position, position
     if isHit then
         self:dispatchEvent({name = Touchable.ON_BEGAN, sender = self, position = position})
+        doCallback(self.onBeganFunc, {sender = self, position = position})
         self:startLongTouchTimer()
     end
     return isHit
@@ -60,6 +63,7 @@ function Touchable:onTouchMoved(touch)
     local position = touch:getLocation()
     self.touchCurrPosition = position
     self:dispatchEvent({name = Touchable.ON_MOVED, sender = self, position = position})
+    doCallback(self.onMovedFunc, {sender = self, position = position})
 end
 
 function Touchable:onTouchEnded(touch)
@@ -69,12 +73,14 @@ function Touchable:onTouchEnded(touch)
     local isHit = self:isHit(position)
     self.touchCurrPosition = position
     self:dispatchEvent({name = Touchable.ON_ENDED, sender = self, position = position, isHit = isHit})
+    doCallback(self.onEndedFunc, {sender = self, position = position, isHit = isHit})
 end
 
 function Touchable:onTouchCanceled()
     self:stopLongTouchTimer()
 
     self:dispatchEvent({ name = Touchable.ON_CANCELED, sender = self})
+    doCallback(self.onCanceledFunc, {sender = self})
 end
 
 function Touchable:startLongTouchTimer()
@@ -117,6 +123,30 @@ end
 function Touchable:setOnLongTouch(func)
     if func and type(func) == "function" then
         self.onLongTouchFunc = func
+    end
+end
+
+function Touchable:setOnBegan(func)
+    if func and type(func) == "function" then
+        self.onBeganFunc = func
+    end
+end
+
+function Touchable:setOnMoved(func)
+    if func and type(func) == "function" then
+        self.onMovedFunc = func
+    end
+end
+
+function Touchable:setOnEnded(func)
+    if func and type(func) == "function" then
+        self.onEndedFunc = func
+    end
+end
+
+function Touchable:setOnCanceled(func)
+    if func and type(func) == "function" then
+        self.onCanceledFunc = func
     end
 end
 
