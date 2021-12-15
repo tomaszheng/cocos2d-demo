@@ -32,6 +32,8 @@ function Touchable:initData(data)
     self.onBeganFunc, self.onMovedFunc = data.onBegan, data.onMoved
     self.onEndedFunc, self.onCanceledFunc = data.onEnded, data.onCanceled
     self.onLongTouchFunc = data.onLongTouch
+    -- 是否可用
+    self.isEnabled = data.isEnabled == nil and true or data.isEnabled
 
     self.touchListenerId = -1
     self.longTouchTimer = nil
@@ -49,6 +51,8 @@ function Touchable:initListener()
 end
 
 function Touchable:onTouchBegan(touch)
+    if not self.isEnabled then return false end
+
     local position = touch:getLocation()
     local isHit = self:isHit(position)
     self.touchBeganPosition, self.touchCurrPosition = position, position
@@ -148,6 +152,10 @@ function Touchable:setOnCanceled(func)
     if func and type(func) == "function" then
         self.onCanceledFunc = func
     end
+end
+
+function Touchable:setEnabled(isEnabled)
+    self.isEnabled = isEnabled
 end
 
 function Touchable:onDestroy()

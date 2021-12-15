@@ -66,6 +66,8 @@ function Clickable:initData(data)
     self.onClickFunc, self.onLongTouchFunc = data.onClick, data.onLongTouch
     -- 自定义交互方法(在按下/抬起手指时触发)
     self.interactionFunc = data.interaction
+    -- 是否可用
+    self.isEnabled = data.isEnabled == nil and true or data.isEnabled
 
     self.touchable = self.node:getLuaComponent(Touchable)
     if not self.touchable then
@@ -96,7 +98,20 @@ function Clickable:initListener()
 end
 
 function Clickable:onTouchBegan(event)
-    self:resetToDefault()
+    if not self.isEnabled then return end
+
+    self:press()
+
+    local position = event.position
+    self.touchBeganPosition, self.touchCurrPosition = position, position
+    self.isCurrTouchValid = false
+
+    self:dispatchEvent({name = Clickable.ON_BEGAN, sender = self, position = position})
+    doCallback(self.onBeganFunc, {sender = self, position = position})
+end
+
+function Clickable:press()
+    self:resetToDefault(true)
 
     if self.style == Clickable.STYLES.COLOR then
         self.node:setColor(self.color)
@@ -107,16 +122,11 @@ function Clickable:onTouchBegan(event)
     else
         doCallback(self.interactionFunc, Clickable.STATUS.PRESSED)
     end
-
-    local position = event.position
-    self.touchBeganPosition, self.touchCurrPosition = position, position
-    self.isCurrTouchValid = false
-
-    self:dispatchEvent({name = Clickable.ON_BEGAN, sender = self, position = position})
-    doCallback(self.onBeganFunc, {sender = self, position = position})
 end
 
 function Clickable:onLongTouch(event)
+    if not self.isEnabled then return end
+
     local position, isHit = event.position, event.isHit
     if isHit and not self:isClickLimiting() then
         self:trigger(Clickable.ON_LONG_TOUCH, self.onLongTouchFunc, position)
@@ -133,6 +143,8 @@ function Clickable:trigger(name, func, position)
 end
 
 function Clickable:onTouchMoved(event)
+    if not self.isEnabled then return end
+
     local position = event.position
     self.touchCurrPosition = event.position
 
@@ -141,6 +153,8 @@ function Clickable:onTouchMoved(event)
 end
 
 function Clickable:onTouchEnded(event)
+    if not self.isEnabled then return end
+
     self:resetToDefault(false)
 
     local position, isHit = event.position, event.isHit
@@ -157,6 +171,8 @@ function Clickable:onTouchEnded(event)
 end
 
 function Clickable:onTouchCanceled()
+    if not self.isEnabled then return end
+
     self:resetToDefault(false)
 
     self:dispatchEvent({ name = Clickable.ON_CANCELED, sender = self})
@@ -265,6 +281,10 @@ function Clickable:setOnCanceled(func)
     if func and type(func) == "function" then
         self.onCanceledFunc = func
     end
+end
+
+function Clickable:setEnabled(isEnabled)
+    self.isEnabled = isEnabled
 end
 
 function Clickable:onDestroy()
