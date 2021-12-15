@@ -54,7 +54,7 @@ function Clickable:initData(data)
     -- 按下有位移，是否可以响应
     self.isMoveLimit = data.isMoveLimit or false
     self.moveThreshold = data.moveThreshold or 5
-    -- 两次按下是否有时间间隔
+    -- 两次按下是否有时间间隔限制
     self.isIntervalLimit = data.isIntervalLimit or false
     self.intervalThreshold = data.intervalThreshold or 0.5
     -- 触发长按的时间阈值
@@ -106,17 +106,17 @@ end
 function Clickable:onTouchBegan(event)
     if not self.isEnabled then return end
 
-    self:press()
-
     local position = event.position
     self.touchBeganPosition, self.touchCurrPosition = position, position
     self.isCurrTouchValid = false
+
+    self:press(position)
 
     self:dispatchEvent({name = Clickable.ON_BEGAN, sender = self, position = position})
     doCallback(self.onBeganFunc, {sender = self, position = position})
 end
 
-function Clickable:press()
+function Clickable:press(position)
     self:resetToDefault(true)
 
     if self.style == Clickable.STYLES.COLOR then
@@ -126,7 +126,7 @@ function Clickable:press()
     elseif self.style == Clickable.STYLES.IMAGE then
         self:updateTexture(Clickable.STATUS.PRESSED)
     else
-        doCallback(self.interactionFunc, Clickable.STATUS.PRESSED)
+        doCallback(self.interactionFunc, Clickable.STATUS.PRESSED, position)
     end
 end
 
@@ -221,7 +221,7 @@ function Clickable:resetToDefault(isFromBegin)
     elseif self.style == Clickable.STYLES.IMAGE then
         self:updateTexture(Clickable.STATUS.NORMAL)
     else
-        doCallback(self.interactionFunc, Clickable.STATUS.NORMAL, isFromBegin)
+        doCallback(self.interactionFunc, Clickable.STATUS.NORMAL)
     end
 end
 
