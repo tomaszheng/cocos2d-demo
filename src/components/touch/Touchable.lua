@@ -130,6 +130,16 @@ function Touchable:setOnLongTouch(func)
     end
 end
 
+function Touchable:setLongTouchEnabled(enabled)
+    self.isLongTouchEnabled = enabled
+end
+
+function Touchable:setLongTouchThreshold(threshold)
+    if type(threshold) == "number" then
+        self.longTouchThreshold = threshold
+    end
+end
+
 function Touchable:setOnBegan(func)
     if func and type(func) == "function" then
         self.onBeganFunc = func

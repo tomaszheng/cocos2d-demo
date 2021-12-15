@@ -35,6 +35,7 @@ function Clickable:ctor(node, data)
     cc.load("event").new():bind(self)
     Clickable.super.ctor(self, node, data)
     self:initData(data)
+    self:initTouchable(data)
     self:initListener()
 end
 
@@ -69,15 +70,6 @@ function Clickable:initData(data)
     -- 是否可用
     self.isEnabled = data.isEnabled == nil and true or data.isEnabled
 
-    self.touchable = self.node:getLuaComponent(Touchable)
-    if not self.touchable then
-        self.touchable = self.node:addLuaComponent(Touchable, {
-            shape = data.shape,
-            isLongTouchEnabled = self.type == Clickable.TYPES.LONG_TOUCH,
-            longTouchThreshold = data.longTouchThreshold,
-        })
-    end
-
     -- 当前此touch是否是有效点击
     self.isCurrTouchValid = false
     self.prevTriggerTime = 0
@@ -86,6 +78,20 @@ function Clickable:initData(data)
     self.defaultScale = self.node:getScale()
     self.defaultColor = self.node:getColor()
     self.action = nil
+end
+
+function Clickable:initTouchable(data)
+    self.touchable = self.node:getLuaComponent(Touchable)
+    if not self.touchable then
+        self.touchable = self.node:addLuaComponent(Touchable, {
+            shape = data.shape,
+            isLongTouchEnabled = self.type == Clickable.TYPES.LONG_TOUCH,
+            longTouchThreshold = data.longTouchThreshold,
+        })
+    elseif self.type == Clickable.TYPES.LONG_TOUCH then
+        self.touchable:setLongTouchEnabled(true)
+        self.touchable:setLongTouchThreshold(data.longTouchThreshold)
+    end
 end
 
 function Clickable:initListener()
@@ -126,6 +132,7 @@ end
 
 function Clickable:onLongTouch(event)
     if not self.isEnabled then return end
+    if self.type ~= Clickable.TYPES.LONG_TOUCH then return end
 
     local position, isHit = event.position, event.isHit
     if isHit and not self:isClickLimiting() then
