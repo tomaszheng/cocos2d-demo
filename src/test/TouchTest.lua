@@ -66,7 +66,7 @@ function TouchTest:testClickable()
             printLog("TestTouchable - onMoved", "x=%.2f, y=%.2f", event.position.x, event.position.y)
         end,
         onEnded = function(event)
-            avatar:runAction(cc.MoveTo:create(0.2, pos))
+            --avatar:runAction(cc.MoveTo:create(0.2, pos))
             print("-------------------ended")
         end,
         onClick = function(event)
@@ -74,8 +74,16 @@ function TouchTest:testClickable()
         end,
         onLongTouch = function(event)
             local p = cc.p(pos.x, pos.y + offsetY)
-            avatar:runAction(cc.EaseIn:create(cc.MoveTo:create(0.2, p), 0.7))
+            --avatar:runAction(cc.EaseIn:create(cc.MoveTo:create(0.2, p), 0.7))
             print("------------long touch")
+        end,
+        interaction = function(status, isFromBegan)
+            if status == Clickable.STATUS.NORMAL then
+                avatar:runAction(cc.EaseIn:create(cc.MoveTo:create(0.2, pos), 0.7))
+            else
+                local p = cc.p(pos.x, pos.y + offsetY)
+                avatar:runAction(cc.EaseIn:create(cc.MoveTo:create(0.2, p), 0.7))
+            end
         end
     })
 end

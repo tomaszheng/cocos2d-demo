@@ -33,13 +33,14 @@ function Touchable:initData(data)
     self.onEndedFunc, self.onCanceledFunc = data.onEnded, data.onCanceled
     self.onLongTouchFunc = data.onLongTouch
 
+    self.touchListenerId = -1
     self.longTouchTimer = nil
     self.touchBeganPosition = cc.p(0, 0)
     self.touchCurrPosition = cc.p(0, 0)
 end
 
 function Touchable:initListener()
-    self.node:addTouchEvent({
+    self.touchListenerId = self.node:addTouchEvent({
         onBegan = handler(self, self.onTouchBegan),
         onMoved = handler(self, self.onTouchMoved),
         onEnded = handler(self, self.onTouchEnded),
@@ -150,6 +151,7 @@ function Touchable:setOnCanceled(func)
 end
 
 function Touchable:onDestroy()
+    self.node:removeTouchEvent(self.touchListenerId)
     self:stopLongTouchTimer()
     self:dispatchEvent({name = Touchable.ON_DESTROY})
 end

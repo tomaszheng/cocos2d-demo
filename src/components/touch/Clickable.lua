@@ -64,6 +64,8 @@ function Clickable:initData(data)
     self.onBeganFunc, self.onMovedFunc = data.onBegan, data.onMoved
     self.onEndedFunc, self.onCanceledFunc = data.onEnded, data.onCanceled
     self.onClickFunc, self.onLongTouchFunc = data.onClick, data.onLongTouch
+    -- 自定义交互方法(在按下/抬起手指时触发)
+    self.interactionFunc = data.interaction
 
     self.touchable = self.node:getLuaComponent(Touchable)
     if not self.touchable then
@@ -74,7 +76,9 @@ function Clickable:initData(data)
         })
     end
 
-    self.prevClickTime = 0
+    -- 当前此touch是否是有效点击
+    self.isCurrTouchValid = false
+    self.prevTriggerTime = 0
     self.touchBeganPosition = cc.p(0, 0)
     self.touchCurrPosition = cc.p(0, 0)
     self.defaultScale = self.node:getScale()
@@ -100,11 +104,13 @@ function Clickable:onTouchBegan(event)
         self.action = self.node:runAction(cc.EaseSineOut:create(cc.ScaleTo:create(0.15, self.defaultScale * self.scale)))
     elseif self.style == Clickable.STYLES.IMAGE then
         self:updateTexture(Clickable.STATUS.PRESSED)
+    else
+        doCallback(self.interactionFunc, Clickable.STATUS.PRESSED)
     end
 
     local position = event.position
-    self.touchBeganPosition = position
-    self.touchCurrPosition = position
+    self.touchBeganPosition, self.touchCurrPosition = position, position
+    self.isCurrTouchValid = false
 
     self:dispatchEvent({name = Clickable.ON_BEGAN, sender = self, position = position})
     doCallback(self.onBeganFunc, {sender = self, position = position})
@@ -113,9 +119,17 @@ end
 function Clickable:onLongTouch(event)
     local position, isHit = event.position, event.isHit
     if isHit and not self:isClickLimiting() then
-        self:dispatchEvent({name = Clickable.ON_LONG_TOUCH, sender = self, position = position})
-        doCallback(self.onLongTouchFunc, {sender = self, position = position})
+        self:trigger(Clickable.ON_LONG_TOUCH, self.onLongTouchFunc, position)
     end
+    self:resetToDefault(false)
+end
+
+-- 触发了点击/长按/双击
+function Clickable:trigger(name, func, position)
+    self.isCurrTouchValid = true
+    self.prevTriggerTime = os.clock()
+    self:dispatchEvent({name = name, sender = self, position = position})
+    doCallback(func, {sender = self, position = position})
 end
 
 function Clickable:onTouchMoved(event)
@@ -129,18 +143,17 @@ end
 function Clickable:onTouchEnded(event)
     self:resetToDefault(false)
 
-    local position, isHit, isValid = event.position, event.isHit, false
+    local position, isHit = event.position, event.isHit
     self.touchCurrPosition = position
 
-    if isHit and not self:isClickLimiting() then
-        isValid = true
-        self.prevClickTime = os.clock()
-        self:dispatchEvent({name = Clickable.ON_CLICK, sender = self, position = position})
-        doCallback(self.onClickFunc, {sender = self, position = position})
+    if self.type == Clickable.TYPES.CLICK then
+        if isHit and not self:isClickLimiting() then
+            self:trigger(Clickable.ON_CLICK, self.onClickFunc, position)
+        end
     end
 
-    self:dispatchEvent({name = Clickable.ON_ENDED, sender = self, position = position, isValid = isValid})
-    doCallback(self.onEndedFunc, {sender = self, position = position, isValid = isValid})
+    self:dispatchEvent({name = Clickable.ON_ENDED, sender = self, position = position, isValid = self.isCurrTouchValid})
+    doCallback(self.onEndedFunc, {sender = self, position = position, isValid = self.isCurrTouchValid})
 end
 
 function Clickable:onTouchCanceled()
@@ -156,7 +169,7 @@ end
 
 function Clickable:isClickLimiting()
     if self.isIntervalLimit then
-        if os.clock() - self.prevClickTime < self.intervalThreshold then
+        if os.clock() - self.prevTriggerTime < self.intervalThreshold then
             return true
         end
     end
@@ -184,6 +197,8 @@ function Clickable:resetToDefault(isFromBegin)
         end
     elseif self.style == Clickable.STYLES.IMAGE then
         self:updateTexture(Clickable.STATUS.NORMAL)
+    else
+        doCallback(self.interactionFunc, Clickable.STATUS.NORMAL, isFromBegin)
     end
 end
 
@@ -217,7 +232,15 @@ function Clickable:stopAction()
 end
 
 function Clickable:setLimitFunc(func)
-    self.onLimitFunc = func
+    if func and type(func) == "function" then
+        self.onLimitFunc = func
+    end
+end
+
+function Clickable:setInteractionFunc(func)
+    if func and type(func) == "function" then
+        self.interactionFunc = func
+    end
 end
 
 function Clickable:setOnBegan(func)
