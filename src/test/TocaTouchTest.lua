@@ -52,7 +52,7 @@ end
 function TocaTouchTest:testClickable()
     local pos = cc.p(display.cx + 150, display.cy)
     local avatar = cc.Sprite:create("res/bg_avatar_default.png")
-                     :align(cc.p(0.5, 0), pos)
+                     :align(cc.p(0.5, 0.5), pos)
                      :addTo(self)
 
     local offsetY = 50
@@ -87,8 +87,8 @@ function TocaTouchTest:testClickable()
             print("duration: ", duration)
             interactionAction = TocaActionUtils.press(avatar, p, {
                 scale = 1.2,
-                --angle = -45,
-                anchor = cc.p(0.5, 0.5)
+                angle = 90,
+                --anchor = cc.p(0.5, 0.5)
             })
         end,
         interaction = function(status, position)

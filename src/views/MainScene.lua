@@ -1,4 +1,5 @@
 local ShaderTest = require("src.test.ShaderTest")
+local TocaTouchTest = require("src.test.TocaTouchTest")
 local MainScene = class("MainScene", BaseScene)
 
 function MainScene:ctor()
@@ -7,7 +8,8 @@ function MainScene:ctor()
     local bg = cc.Sprite:create("res/bg_default.png"):addTo(self):moveCenter()
     bg:setScale(display.height / bg:getHeight())
 
-    ShaderTest.new():addTo(self)
+    --ShaderTest.new():addTo(self)
+    TocaTouchTest.new():addTo(self)
 
     -- add HelloWorld label
     local lblHello = cc.Label:createWithSystemFont("Hello World", "Arial", 40)
