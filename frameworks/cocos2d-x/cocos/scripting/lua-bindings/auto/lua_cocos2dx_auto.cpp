@@ -7,7 +7,6 @@
 #include "renderer/CCPipelineDescriptor.h"
 #include "scripting/lua-bindings/manual/tolua_fix.h"
 #include "scripting/lua-bindings/manual/LuaBasicConversions.h"
-#include "scripting/lua-bindings/manual/SpineConversions.h"
 
 int lua_cocos2dx_Ref_release(lua_State* tolua_S)
 {
@@ -46771,7 +46770,7 @@ int lua_cocos2dx_ActionManager_getNumberOfRunningActionsInTargetByTag(lua_State*
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_ActionManager_getNumberOfRunningActionsInTargetByTag'", nullptr);
             return 0;
         }
-        size_t ret = cobj->getNumberOfRunningActionsInTargetByTag(arg0, arg1);
+        unsigned int ret = cobj->getNumberOfRunningActionsInTargetByTag(arg0, arg1);
         tolua_pushnumber(tolua_S,(lua_Number)ret);
         return 1;
     }
@@ -50242,7 +50241,7 @@ int lua_cocos2dx_AtlasNode_getQuadsToDraw(lua_State* tolua_S)
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_AtlasNode_getQuadsToDraw'", nullptr);
             return 0;
         }
-        size_t ret = cobj->getQuadsToDraw();
+        unsigned int ret = cobj->getQuadsToDraw();
         tolua_pushnumber(tolua_S,(lua_Number)ret);
         return 1;
     }
@@ -89716,12 +89715,12 @@ int lua_cocos2dx_Pass_setUniformPointLightPosition(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformPointLightPosition");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformPointLightPosition");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformPointLightPosition'", nullptr);
@@ -89770,12 +89769,12 @@ int lua_cocos2dx_Pass_setUniformDirLightDir(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformDirLightDir");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformDirLightDir");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformDirLightDir'", nullptr);
@@ -89921,12 +89920,12 @@ int lua_cocos2dx_Pass_setUniformSpotLightOuterAngleCos(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformSpotLightOuterAngleCos");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformSpotLightOuterAngleCos");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformSpotLightOuterAngleCos'", nullptr);
@@ -89975,12 +89974,12 @@ int lua_cocos2dx_Pass_setUniformSpotLightDir(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformSpotLightDir");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformSpotLightDir");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformSpotLightDir'", nullptr);
@@ -90029,12 +90028,12 @@ int lua_cocos2dx_Pass_setUniformMatrixPalette(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformMatrixPalette");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformMatrixPalette");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformMatrixPalette'", nullptr);
@@ -90180,12 +90179,12 @@ int lua_cocos2dx_Pass_setUniformSpotLightRangeInverse(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformSpotLightRangeInverse");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformSpotLightRangeInverse");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformSpotLightRangeInverse'", nullptr);
@@ -90352,12 +90351,12 @@ int lua_cocos2dx_Pass_setUniformPointLightRangeInverse(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformPointLightRangeInverse");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformPointLightRangeInverse");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformPointLightRangeInverse'", nullptr);
@@ -90556,12 +90555,12 @@ int lua_cocos2dx_Pass_setUniformSpotLightColor(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformSpotLightColor");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformSpotLightColor");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformSpotLightColor'", nullptr);
@@ -90610,12 +90609,12 @@ int lua_cocos2dx_Pass_setUniformAmbientLigthColor(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformAmbientLigthColor");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformAmbientLigthColor");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformAmbientLigthColor'", nullptr);
@@ -90664,12 +90663,12 @@ int lua_cocos2dx_Pass_setUniformDirLightColor(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformDirLightColor");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformDirLightColor");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformDirLightColor'", nullptr);
@@ -90718,12 +90717,12 @@ int lua_cocos2dx_Pass_setUniformSpotLightPosition(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformSpotLightPosition");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformSpotLightPosition");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformSpotLightPosition'", nullptr);
@@ -90875,12 +90874,12 @@ int lua_cocos2dx_Pass_setUniformSpotLightInnerAngleCos(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformSpotLightInnerAngleCos");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformSpotLightInnerAngleCos");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformSpotLightInnerAngleCos'", nullptr);
@@ -90929,12 +90928,12 @@ int lua_cocos2dx_Pass_setUniformColor(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformColor");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformColor");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformColor'", nullptr);
@@ -90983,12 +90982,12 @@ int lua_cocos2dx_Pass_setUniformPointLightColor(lua_State* tolua_S)
     if (argc == 2) 
     {
         const void* arg0;
-        size_t arg1;
+        unsigned int arg1;
 
         #pragma warning NO CONVERSION TO NATIVE FOR void*
 		ok = false;
 
-        ok &= luaval_to_size_t(tolua_S, 3, &arg1, "cc.Pass:setUniformPointLightColor");
+        ok &= luaval_to_uint32(tolua_S, 3,&arg1, "cc.Pass:setUniformPointLightColor");
         if(!ok)
         {
             tolua_error(tolua_S,"invalid arguments in function 'lua_cocos2dx_Pass_setUniformPointLightColor'", nullptr);
