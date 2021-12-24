@@ -77,9 +77,11 @@ function RubberBand:initUI()
 end
 
 function RubberBand:initListeners()
-    self:addTouchEvent(handler(self, self.onTouchBegan),
-            handler(self, self.onTouchMoved),
-            handler(self, self.onTouchEnded))
+    self:addTouchListener({
+        onBegan = handler(self, self.onTouchBegan),
+        onMoved = handler(self, self.onTouchMoved),
+        onEnded = handler(self, self.onTouchEnded),
+    })
 end
 
 function RubberBand:onTouchBegan(touch)

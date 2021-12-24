@@ -7,11 +7,11 @@ local Node = cc.Node
 
 local __listenerId__ = 0
 
-function Node:addTouchEvent(options)
+function Node:addTouchListener(options)
     options = options or {}
     __listenerId__ = __listenerId__ + 1
 
-    self:addTouchEvent_()
+    self:addTouchListener_()
 
     self.touchCallbacks_[__listenerId__] = {
         onBegan = options.onBegan, onMoved = options.onMoved,
@@ -22,7 +22,7 @@ function Node:addTouchEvent(options)
     return __listenerId__
 end
 
-function Node:addTouchEvent_()
+function Node:addTouchListener_()
     if self.listener_ and type(self.listener_) == "userdata" then return end
 
     self.touchCallbacks_ = {}
@@ -69,7 +69,7 @@ function Node:onTouchCanceled_(touch)
     end)
 end
 
-function Node:removeTouchEvent(listenerId)
+function Node:removeTouchListener(listenerId)
     if listenerId then
         self.touchCallbacks_[listenerId] = nil
     else

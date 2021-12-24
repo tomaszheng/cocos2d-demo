@@ -42,7 +42,7 @@ function Touchable:initData(data)
 end
 
 function Touchable:initListener()
-    self.touchListenerId = self.node:addTouchEvent({
+    self.touchListenerId = self.node:addTouchListener({
         onBegan = handler(self, self.onTouchBegan),
         onMoved = handler(self, self.onTouchMoved),
         onEnded = handler(self, self.onTouchEnded),

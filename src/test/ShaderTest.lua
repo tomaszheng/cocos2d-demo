@@ -69,7 +69,7 @@ function ShaderTest:testBrightness()
 
     local rect = avatar:getBoundingBox()
     local maxDistance =  500
-    avatar:addTouchEvent({
+    avatar:addTouchListener({
         onBegan = function()
             return true
         end,
@@ -84,7 +84,7 @@ function ShaderTest:testBrightness()
         end
     })
 
-    avatar:addTouchEvent({
+    avatar:addTouchListener({
         onEnded = function(touch)
             print("on ended")
         end
