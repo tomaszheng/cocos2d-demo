@@ -9,6 +9,7 @@ local Brightness = require("src.components.shaders.Brightness")
 local Ripple = require("src.components.shaders.Ripple")
 local Clickable = require("src.components.touch.Clickable")
 local Touchable = require("src.components.touch.Touchable")
+local Draggable = require("src.components.touch.Draggable")
 local ShaderTest = class("ShaderTest", BaseNode)
 
 function ShaderTest:ctor()
@@ -109,6 +110,9 @@ function ShaderTest:testRipple()
             local p = event.sender.node:convertToNodeSpace(event.position)
             avatar:getLuaComponent(Ripple):start(p)
         end
+    })
+    avatar:addLuaComponent(Draggable, {
+        reboundEnabled = true
     })
 end
 

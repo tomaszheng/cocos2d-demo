@@ -32,8 +32,13 @@ function Touchable:initData(data)
     self.onBeganFunc, self.onMovedFunc = data.onBegan, data.onMoved
     self.onEndedFunc, self.onCanceledFunc = data.onEnded, data.onCanceled
     self.onLongTouchFunc = data.onLongTouch
+    -- 响应限制方法
+    self.onLimitFunc = data.onLimit
     -- 是否可用
     self.isEnabled = data.isEnabled == nil and true or data.isEnabled
+
+    -- 本次touch是否可用
+    self.isCurrTouchEnabled = true
 
     self.touchListenerId = -1
     self.longTouchTimer = nil
@@ -51,11 +56,18 @@ function Touchable:initListener()
 end
 
 function Touchable:onTouchBegan(touch)
-    if not self.isEnabled then return false end
-
     local position = touch:getLocation()
+
+    if not self.isEnabled then return false end
+    if not self.isCurrTouchEnabled then return false end
+    if self.onLimitFunc and not doCallback(self.onLimitFunc, position) then
+        return false
+    end
+
     local isHit = self:isHit(position)
-    self.touchBeganPosition, self.touchCurrPosition = position, position
+    self.touchBeganPosition = position
+    self.touchCurrPosition = position
+    self.isCurrTouchEnabled = true
     if isHit then
         self:dispatchEvent({name = Touchable.ON_BEGAN, sender = self, position = position})
         doCallback(self.onBeganFunc, {sender = self, position = position})
@@ -65,13 +77,18 @@ function Touchable:onTouchBegan(touch)
 end
 
 function Touchable:onTouchMoved(touch)
+    if not self.isCurrTouchEnabled then return false end
+
     local position = touch:getLocation()
     self.touchCurrPosition = position
     self:dispatchEvent({name = Touchable.ON_MOVED, sender = self, position = position})
     doCallback(self.onMovedFunc, {sender = self, position = position})
+    return true
 end
 
 function Touchable:onTouchEnded(touch)
+    if not self.isCurrTouchEnabled then return false end
+
     self:stopLongTouchTimer()
 
     local position = touch:getLocation()
@@ -79,13 +96,17 @@ function Touchable:onTouchEnded(touch)
     self.touchCurrPosition = position
     self:dispatchEvent({name = Touchable.ON_ENDED, sender = self, position = position, isHit = isHit})
     doCallback(self.onEndedFunc, {sender = self, position = position, isHit = isHit})
+    return true
 end
 
 function Touchable:onTouchCanceled()
+    if not self.isCurrTouchEnabled then return false end
+
     self:stopLongTouchTimer()
 
-    self:dispatchEvent({ name = Touchable.ON_CANCELED, sender = self})
+    self:dispatchEvent({name = Touchable.ON_CANCELED, sender = self})
     doCallback(self.onCanceledFunc, {sender = self})
+    return true
 end
 
 function Touchable:startLongTouchTimer()
@@ -108,6 +129,7 @@ function Touchable:onLongTouch()
     local isHit = self:isHit(position)
     self:dispatchEvent({name = Touchable.ON_LONG_TOUCH, sender = self, isHit = isHit, position = position})
     doCallback(self.onLongTouchFunc, {sender = self, isHit = isHit, position = position})
+    return true
 end
 
 function Touchable:isHit(location)
@@ -166,6 +188,10 @@ end
 
 function Touchable:setEnabled(isEnabled)
     self.isEnabled = isEnabled
+end
+
+function Touchable:setCurrTouchEnabled(isEnabled)
+    self.isCurrTouchEnabled = isEnabled
 end
 
 function Touchable:onDestroy()
