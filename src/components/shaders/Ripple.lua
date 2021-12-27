@@ -9,9 +9,9 @@ local Ripple = class("Ripple", BaseShader)
 Ripple.VERT = "res/shaders/mvp.vsh"
 Ripple.FRAG = "res/shaders/ripple.fsh"
 
-local DEFAULT_RADIUS = 40
-local DEFAULT_WIDTH = 10
-local DEFAULT_BORDER = 20
+local DEFAULT_RADIUS = 5
+local DEFAULT_WIDTH = 1.5
+local DEFAULT_BORDER = 3
 
 local RADIUS_NAME = "u_radius"
 local CENTER_NAME = "u_center"
@@ -36,7 +36,7 @@ function Ripple:initData(data)
     -- 时间
     self.time = 0
     -- 径向模糊的中心
-    self.center = data.center or cc.p(0.5, 0.5)
+    self.center = data.center or UIUtils.center(self.resolution)
 
     self.isRunning = false
     self.caller = -1
@@ -53,7 +53,6 @@ function Ripple:initDefaultUniform()
 end
 
 function Ripple:start(position)
-    logi("Ripple:start")
     self.time = 0
     self:setCenter(position)
     if not self.isRunning then
@@ -69,16 +68,19 @@ end
 
 function Ripple:setRadius(radius)
     self.radius = radius
+    radius = radius / self.resolution.width
     self:setFloat(RADIUS_NAME, radius)
 end
 
 function Ripple:setWidth(width)
     self.width = width
+    width = width / self.resolution.width
     self:setFloat(WIDTH_NAME, width)
 end
 
 function Ripple:setBorder(border)
     self.border = border
+    border = border / self.resolution.width
     self:setFloat(BORDER_NAME, border)
 end
 
@@ -88,7 +90,10 @@ function Ripple:setTime(time)
 end
 
 function Ripple:setCenter(center)
-    self.center = cc.pNormalize(self.center)
+    self.center = center
+
+    center = cc.p(self.center.x / self.resolution.width, self.center.y / self.resolution.height)
+    center.y = 1 - center.y
     self:setVec2(CENTER_NAME, center)
 end
 

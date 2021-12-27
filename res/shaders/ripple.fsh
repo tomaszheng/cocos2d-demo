@@ -15,18 +15,19 @@ uniform vec2 u_center;
 uniform vec2 u_resolution;
 
 void main() {
-    float r = u_radius / u_resolution.x + u_time / u_resolution.x;
-    float w = u_width / u_resolution.x;
-    float b = u_border / u_resolution.x * r * 30.5;
-    vec2 off = v_texCoord - u_center;
-//    off.x *= off.x * u_resolution.x / u_resolution.y;
+    float r = u_radius + u_time * 0.6;
+    float w = u_width;
+    // 边缘半径随着半径变大而变宽
+    float b = u_border * r * 30.5;
+    vec2 off = u_center - v_texCoord;
+    off.x *= u_resolution.x / u_resolution.y;
     float dis = length(off);
     float circle = smoothstep(r + w + b, r + w, dis) - smoothstep(r, r - b, dis);
-
-    circle *= 0.4;
+    // 强度小一点
+    circle *= 0.3;
+    // 圆运动的最大边界
     circle *= max(0.3 - dis, 0.0);
-    vec2 uv = v_texCoord + (v_texCoord - u_center) * circle;
-    vec4 tex = texture2D(u_texture, uv);
 
-    gl_FragColor = vec4(tex.xyz, tex.w);
+    vec2 uv = v_texCoord + (v_texCoord - u_center) * circle;
+    gl_FragColor = texture2D(u_texture, uv);
 }
