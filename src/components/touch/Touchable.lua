@@ -169,7 +169,7 @@ function Touchable:setEnabled(isEnabled)
 end
 
 function Touchable:onDestroy()
-    self.node:removeTouchEvent(self.touchListenerId)
+    self.node:removeTouchListener(self.touchListenerId)
     self:stopLongTouchTimer()
     self:dispatchEvent({name = Touchable.ON_DESTROY})
 end

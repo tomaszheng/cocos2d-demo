@@ -46,6 +46,18 @@ function delayCall(func, delay, ...)
     return handle
 end
 
+function repeatCall(func, delay, num, ...)
+    local handle, args = nil, {...}
+    handle = cc.Director:getInstance():getScheduler():scheduleScriptFunc(function()
+        num = num - 1
+        if num == 0 then
+            stopCall(handle)
+        end
+        doCallback(func, unpack(args))
+    end, delay, false)
+    return handle
+end
+
 function stopCall(handle)
     if not handle then return end
     cc.Director:getInstance():getScheduler():unscheduleScriptEntry(handle)
