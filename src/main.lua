@@ -1,8 +1,13 @@
 function __G__TRACKBACK__(msg)
     print('----------------------------------------')
-    print('LUA ERROR: ' .. tostring(msg) .. '\n')
+    print('LOG DATE: ' .. os.date("%c"))
+    print('LUA ERROR: ' .. tostring(msg))
     print(debug.traceback())
     print('----------------------------------------')
+
+    if loge then
+        loge(msg, false)
+    end
 end
 
 cc.FileUtils:getInstance():setPopupNotify(false)

@@ -25,6 +25,8 @@ BaseComponent = require("src.base.BaseComponent")
 EventManager = require("src.managers.EventManager")
 
 -- utils
+Log = require("src.utils.Log")
+loge, logi = Log.error, Log.info
 UIUtils = require("src.utils.UIUtils")
 ShotUtils = require("src.utils.ShotUtils")
 GeometryConstants = require 'src.utils.geometry.GeometryConstants'
