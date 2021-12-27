@@ -6,12 +6,16 @@
 local Blur = require("src.components.shaders.Blur")
 local Outline = require("src.components.shaders.Outline")
 local Brightness = require("src.components.shaders.Brightness")
+local Ripple = require("src.components.shaders.Ripple")
+local Clickable = require("src.components.touch.Clickable")
+local Touchable = require("src.components.touch.Touchable")
 local ShaderTest = class("ShaderTest", BaseNode)
 
 function ShaderTest:ctor()
     --self:testOutline()
     --self:testBlur()
     self:testBrightness()
+    self:testRipple()
 end
 
 function ShaderTest:testOutline()
@@ -87,6 +91,23 @@ function ShaderTest:testBrightness()
     avatar:addTouchListener({
         onEnded = function(touch)
             print("on ended")
+        end
+    })
+end
+
+function ShaderTest:testRipple()
+    local pos = cc.p(300, 700)
+    local avatar = cc.Sprite:create("res/bg_avatar_default.png")
+                     :move(pos)
+                     :addTo(self)
+    avatar:addLuaComponent(Ripple, {
+        center = cc.p(0.5, 0.4)
+    })
+
+    avatar:addLuaComponent(Clickable, {
+        onClick = function(event)
+            local p = event.sender.node:convertToNodeSpace(event.position)
+            avatar:getLuaComponent(Ripple):start(p)
         end
     })
 end
