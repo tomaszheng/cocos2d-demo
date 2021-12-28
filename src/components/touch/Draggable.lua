@@ -40,33 +40,33 @@ function Draggable:initData(data)
     Draggable.super.initData(self, data)
     data = data or {}
     -- 拖拽时什么位置与触摸点对齐
-    self.anchorType = data.anchorType or Draggable.ANCHOR_TYPES.CUSTOM
-    self.draggingAnchor = data.anchor
+    self._anchorType = data.anchorType or Draggable.ANCHOR_TYPES.CUSTOM
+    self._draggingAnchor = data.anchor
     -- 拖拽移动时的响应函数
-    self.onDragLimitFunc = data.dragLimitFunc
+    self._onDragLimitFunc = data.dragLimitFunc
     -- 拖拽是否有位移限制
-    self.isMoveLimit = data.isMoveLimit or false
-    self.moveThreshold = data.moveThreshold or 5
+    self._isMoveLimit = data.isMoveLimit or false
+    self._moveThreshold = data.moveThreshold or 5
     -- 是否可以回弹
-    self.reboundEnabled = data.reboundEnabled or false
-    self.onReboundFunc = data.reboundFunc
+    self._reboundEnabled = data.reboundEnabled or false
+    self._onReboundFunc = data.reboundFunc
 
-    self.isDragEnabled = true
-    self.isRebounding = false
-    self.nodeOriginalAnchor = self.node:getAnchorPoint()
-    self.nodeOriginalSize = self.node:getContentSize()
-    self.nodeOriginalPosition = cc.p(self.node:getPosition())
-    self.currDraggingAnchor = cc.p(0, 0)
-    self.action = nil
+    self._isDragEnabled = true
+    self._isRebounding = false
+    self._nodeOriginalAnchor = self.node:getAnchorPoint()
+    self._nodeOriginalSize = self.node:getContentSize()
+    self._nodeOriginalPosition = cc.p(self.node:getPosition())
+    self._currDraggingAnchor = cc.p(0, 0)
+    self._reboundAction = nil
 end
 
 function Draggable:onTouchBegan(touch)
-    self.nodeOriginalAnchor = self.node:getAnchorPoint()
-    self.nodeOriginalSize = self.node:getContentSize()
-    self.nodeOriginalPosition = cc.p(self.node:getPosition())
-    self.currDraggingAnchor = self:getDraggingAnchor(touch:getLocation())
+    self._nodeOriginalAnchor = self.node:getAnchorPoint()
+    self._nodeOriginalSize = self.node:getContentSize()
+    self._nodeOriginalPosition = cc.p(self.node:getPosition())
+    self._currDraggingAnchor = self:getDraggingAnchor(touch:getLocation())
 
-    if not self.isDragEnabled or self.isRebounding then
+    if not self._isDragEnabled or self._isRebounding then
         return false
     end
     return Draggable.super.onTouchBegan(self, touch)
@@ -74,14 +74,14 @@ end
 
 function Draggable:getDraggingAnchor(position)
     position = self.node:convertToNodeSpace(position)
-    if self.anchorType == Draggable.ANCHOR_TYPES.CUSTOM then
-        if self.draggingAnchor then
-            return self.draggingAnchor
+    if self._anchorType == Draggable.ANCHOR_TYPES.CUSTOM then
+        if self._draggingAnchor then
+            return self._draggingAnchor
         else
-            return cc.p(position.x / self.nodeOriginalSize.width, position.y / self.nodeOriginalSize.height)
+            return cc.p(position.x / self._nodeOriginalSize.width, position.y / self._nodeOriginalSize.height)
         end
     else
-        return ANCHOR_POINTS[self.anchorType]
+        return ANCHOR_POINTS[self._anchorType]
     end
 end
 
@@ -91,8 +91,8 @@ function Draggable:onTouchMoved(touch)
     if not self:isDragLimiting() then return false end
 
     local position = self.node:getParent():convertToNodeSpace(touch:getLocation())
-    local offX = self.nodeOriginalSize.width * (self.nodeOriginalAnchor.x - self.currDraggingAnchor.x)
-    local offY = self.nodeOriginalSize.height * (self.nodeOriginalAnchor.y - self.currDraggingAnchor.y)
+    local offX = self._nodeOriginalSize.width * (self._nodeOriginalAnchor.x - self._currDraggingAnchor.x)
+    local offY = self._nodeOriginalSize.height * (self._nodeOriginalAnchor.y - self._currDraggingAnchor.y)
     self.node:move(position.x + offX, position.y + offY)
     return true
 end
@@ -100,7 +100,7 @@ end
 function Draggable:onTouchEnded(touch)
     if not Draggable.super.onTouchEnded(self, touch) then return false end
 
-    if self.reboundEnabled then
+    if self._reboundEnabled then
         self:rebound()
     end
     return true
@@ -112,42 +112,51 @@ function Draggable:onTouchCanceled()
 end
 
 function Draggable:isDragLimiting()
-    if self.isMoveLimit then
+    if self._isMoveLimit then
         local distance = cc.pGetDistance(self.touchBeganPosition, self.touchCurrPosition)
-        if distance > self.moveThreshold then
+        if distance > self._moveThreshold then
             return false
         end
     end
-    if self.onDragLimitFunc then
-        return doCallback(self.onDragLimitFunc, self.touchCurrPosition)
+    if self._onDragLimitFunc then
+        return doCallback(self._onDragLimitFunc, self.touchCurrPosition)
     end
     return true
 end
 
 function Draggable:rebound()
-    if self.onReboundFunc then
-        doCallback(self.onReboundFunc, self.touchCurrPosition)
+    if self._onReboundFunc then
+        doCallback(self._onReboundFunc, self.touchCurrPosition)
     else
         self:doDefaultRebound()
     end
 end
 
 function Draggable:setDragEnabled(enabled)
-    self.isDragEnabled = enabled
+    self._isDragEnabled = enabled
 end
 
 function Draggable:setRebounding(rebounding)
-    self.isRebounding = rebounding
+    self._isRebounding = rebounding
 end
 
 function Draggable:doDefaultRebound()
-    self.isRebounding = true
-    self.node:runAction(cc.Sequence:create(
-            cc.MoveTo:create(0.5, self.nodeOriginalPosition),
+    self._isRebounding = true
+    self._reboundAction = self.node:runAction(cc.Sequence:create(
+            cc.MoveTo:create(0.5, self._nodeOriginalPosition),
             cc.CallFunc:create(function()
-                self.isRebounding = false
+                self._reboundAction = nil
+                self._isRebounding = false
             end)
     ))
+end
+
+function Draggable:stopRebound()
+    if self._reboundAction then
+        self.node:stopAction(self._reboundAction)
+    end
+    self._reboundAction = nil
+    self._isRebounding = false
 end
 
 return Draggable
