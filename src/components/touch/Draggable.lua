@@ -5,32 +5,22 @@
 --- 拖拽组件
 ---
 local Touchable = require("src.components.touch.Touchable")
+local TouchConstants = require("src.components.touch.TouchConstants")
 local Draggable = class("Draggable", Touchable)
 
-Draggable.ANCHOR_TYPES = {
-    CENTER          = "center",
-    LEFT_TOP        = "left_top",
-    LEFT_BOTTOM     = "left_bottom",
-    LEFT_CENTER     = "left_center",
-    RIGHT_TOP       = "right_top",
-    RIGHT_BOTTOM    = "right_bottom",
-    RIGHT_CENTER    = "right_center",
-    TOP_CENTER      = "top_center",
-    CENTER_BOTTOM   = "center_bottom",
-    CUSTOM          = "custom",
+local ANCHOR_POINTS = {
+    [TouchConstants.ANCHOR_TYPES.CENTER]         = display.center,
+    [TouchConstants.ANCHOR_TYPES.LEFT_TOP]       = display.left_top,
+    [TouchConstants.ANCHOR_TYPES.LEFT_BOTTOM]    = display.left_bottom,
+    [TouchConstants.ANCHOR_TYPES.LEFT_CENTER]    = display.left_center,
+    [TouchConstants.ANCHOR_TYPES.RIGHT_TOP]      = display.right_top,
+    [TouchConstants.ANCHOR_TYPES.RIGHT_BOTTOM]   = display.right_bottom,
+    [TouchConstants.ANCHOR_TYPES.RIGHT_CENTER]   = display.right_center,
+    [TouchConstants.ANCHOR_TYPES.TOP_CENTER]     = display.top_center,
+    [TouchConstants.ANCHOR_TYPES.CENTER_BOTTOM]  = display.center_bottom,
 }
 
-local ANCHOR_POINTS = {
-    [Draggable.ANCHOR_TYPES.CENTER]         = display.center,
-    [Draggable.ANCHOR_TYPES.LEFT_TOP]       = display.left_top,
-    [Draggable.ANCHOR_TYPES.LEFT_BOTTOM]    = display.left_bottom,
-    [Draggable.ANCHOR_TYPES.LEFT_CENTER]    = display.left_center,
-    [Draggable.ANCHOR_TYPES.RIGHT_TOP]      = display.right_top,
-    [Draggable.ANCHOR_TYPES.RIGHT_BOTTOM]   = display.right_bottom,
-    [Draggable.ANCHOR_TYPES.RIGHT_CENTER]   = display.right_center,
-    [Draggable.ANCHOR_TYPES.TOP_CENTER]     = display.top_center,
-    [Draggable.ANCHOR_TYPES.CENTER_BOTTOM]  = display.center_bottom,
-}
+local DEFAULT_FOLLOW_FRAME = 10
 
 function Draggable:ctor(node, data)
     Draggable.super.ctor(self, node, data)
@@ -40,31 +30,48 @@ function Draggable:initData(data)
     Draggable.super.initData(self, data)
     data = data or {}
     -- 拖拽时什么位置与触摸点对齐
-    self._anchorType = data.anchorType or Draggable.ANCHOR_TYPES.CUSTOM
+    self._anchorType = data.anchorType or TouchConstants.ANCHOR_TYPES.CUSTOM
     self._draggingAnchor = data.anchor
-    -- 拖拽移动时的响应函数
-    self._onDragLimitFunc = data.dragLimitFunc
+    -- 拖拽移动时的响应限制函数
+    self._onDragLimitFunc = data.onDragLimit
     -- 拖拽是否有位移限制
     self._isMoveLimit = data.isMoveLimit or false
     self._moveThreshold = data.moveThreshold or 5
     -- 是否可以回弹
     self._reboundEnabled = data.reboundEnabled or false
-    self._onReboundFunc = data.reboundFunc
+    self._onReboundFunc = data.onRebound
+    -- 是否可以跟随
+    self._isStartFollowEnabled = data.startFollowEnabled or false
+    self._isMoveFollowEnabled = data.moveFollowEnabled or false
+    -- 拖拽响应函数
+    self._onMoveFunc = data.onMove
+    self._onFollowFunc = data.onStartFollow
 
+    -- node数据
+    self._nodeOriginalAnchor = cc.p(0, 0)
+    self._nodeOriginalSize = cc.size(0, 0)
+    self._nodeOriginalPosition = cc.p(0, 0)
+    self._nodeCurrPosition = cc.p(0, 0)
+
+    self._isStartFollowed = false
+    self._followSpeed = cc.p(0, 0)
     self._isDragEnabled = true
     self._isRebounding = false
-    self._nodeOriginalAnchor = self.node:getAnchorPoint()
-    self._nodeOriginalSize = self.node:getContentSize()
-    self._nodeOriginalPosition = cc.p(self.node:getPosition())
+    self._isCurrMoveTooShort = true
     self._currDraggingAnchor = cc.p(0, 0)
     self._reboundAction = nil
+    self._draggingDstPosition = cc.p(0, 0)
 end
 
 function Draggable:onTouchBegan(touch)
     self._nodeOriginalAnchor = self.node:getAnchorPoint()
     self._nodeOriginalSize = self.node:getContentSize()
     self._nodeOriginalPosition = cc.p(self.node:getPosition())
+    self._nodeCurrPosition = cc.p(self.node:getPosition())
     self._currDraggingAnchor = self:getDraggingAnchor(touch:getLocation())
+    self._isCurrMoveTooShort = true
+    self._isStartFollowed = false
+    self._followSpeed = cc.p(0, 0)
 
     if not self._isDragEnabled or self._isRebounding then
         return false
@@ -74,7 +81,7 @@ end
 
 function Draggable:getDraggingAnchor(position)
     position = self.node:convertToNodeSpace(position)
-    if self._anchorType == Draggable.ANCHOR_TYPES.CUSTOM then
+    if self._anchorType == TouchConstants.ANCHOR_TYPES.CUSTOM then
         if self._draggingAnchor then
             return self._draggingAnchor
         else
@@ -88,12 +95,19 @@ end
 function Draggable:onTouchMoved(touch)
     if not Draggable.super.onTouchMoved(self, touch) then return false end
 
-    if not self:isDragLimiting() then return false end
+    if self:isDragLimiting() then return false end
+    self._isCurrMoveTooShort = false
 
     local position = self.node:getParent():convertToNodeSpace(touch:getLocation())
     local offX = self._nodeOriginalSize.width * (self._nodeOriginalAnchor.x - self._currDraggingAnchor.x)
     local offY = self._nodeOriginalSize.height * (self._nodeOriginalAnchor.y - self._currDraggingAnchor.y)
-    self.node:move(position.x + offX, position.y + offY)
+
+    self._draggingDstPosition = cc.p(position.x + offX, position.y + offY)
+    self._followSpeed.x = (self._draggingDstPosition.x - self._nodeCurrPosition.x) / DEFAULT_FOLLOW_FRAME
+    self._followSpeed.y = (self._draggingDstPosition.y - self._nodeCurrPosition.y) / DEFAULT_FOLLOW_FRAME
+    self._followSpeed.x = self._followSpeed.x < 0 and math.min(self._followSpeed.x, -1) or math.max(self._followSpeed.x, 1)
+    self._followSpeed.y = self._followSpeed.y < 0 and math.min(self._followSpeed.y, -1) or math.max(self._followSpeed.y, 1)
+    self:move()
     return true
 end
 
@@ -113,20 +127,66 @@ end
 
 function Draggable:isDragLimiting()
     if self._isMoveLimit then
-        local distance = cc.pGetDistance(self.touchBeganPosition, self.touchCurrPosition)
-        if distance > self._moveThreshold then
+        if not self._isCurrMoveTooShort then
             return false
+        else
+            local distance = cc.pGetDistance(self._touchBeganPosition, self._touchCurrPosition)
+            if distance > self._moveThreshold then
+                return false
+            end
         end
     end
     if self._onDragLimitFunc then
-        return doCallback(self._onDragLimitFunc, self.touchCurrPosition)
+        return doCallback(self._onDragLimitFunc, self._touchCurrPosition)
     end
     return true
 end
 
+function Draggable:move()
+    if self._isStartFollowEnabled and not self._isStartFollowed then
+        if self._onFollowFunc then
+            self._isStartFollowed = doCallback(self._onFollowFunc, self._draggingDstPosition)
+            if self._isStartFollowed then
+                self._nodeCurrPosition = cc.p(self.node:getPosition())
+            end
+        else
+            self:follow()
+        end
+    elseif self._onMoveFunc then
+        doCallback(self._onMoveFunc, self._draggingDstPosition)
+    elseif self._isMoveFollowEnabled then
+        self:follow()
+    else
+        self._nodeCurrPosition = self._draggingDstPosition
+        self.node:move(self._draggingDstPosition)
+    end
+end
+
+function Draggable:follow()
+    self.node:onUpdate(handler(self, self.doFollow))
+end
+
+function Draggable:doFollow()
+    local x = self._nodeCurrPosition.x + self._followSpeed.x
+    local y = self._nodeCurrPosition.y + self._followSpeed.y
+    local followN = 0
+    if math.abs(x - self._draggingDstPosition.x) < 1 then
+        x, followN = self._draggingDstPosition.x, followN + 1
+    end
+    if math.abs(y - self._draggingDstPosition.y) < 1 then
+        y, followN = self._draggingDstPosition.y, followN + 1
+    end
+    self._nodeCurrPosition.x, self._nodeCurrPosition.y = x, y
+    self.node:move(self._nodeCurrPosition)
+    if followN == 2 then
+        self._isStartFollowed = true
+        self.node:unUpdate()
+    end
+end
+
 function Draggable:rebound()
     if self._onReboundFunc then
-        doCallback(self._onReboundFunc, self.touchCurrPosition)
+        doCallback(self._onReboundFunc, self._touchCurrPosition)
     else
         self:doDefaultRebound()
     end

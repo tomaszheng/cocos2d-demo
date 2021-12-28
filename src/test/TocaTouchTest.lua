@@ -5,6 +5,7 @@
 ---
 local Clickable = require("src.components.touch.Clickable")
 local Touchable = require("src.components.touch.Touchable")
+local TouchConstants = require("src.components.touch.TouchConstants")
 local Brightness = require("src.components.shaders.Brightness")
 local TocaActionUtils = require("src.toca.TocaActionUtils")
 local TocaTouchTest = class("TocaTouchTest", BaseNode)
@@ -58,7 +59,7 @@ function TocaTouchTest:testClickable()
     local offsetY = 50
     local interactionAction
     avatar:addLuaComponent(Clickable, {
-        type = Clickable.TYPES.LONG_TOUCH,
+        type = TouchConstants.TYPES.LONG_TOUCH,
         isMoveLimit = true,
         moveThreshold = 10,
         onBegan = function(event)

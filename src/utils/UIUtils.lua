@@ -16,6 +16,27 @@ function UIUtils.getTextureResType(path)
     return ccui.TextureResType.localType
 end
 
+function UIUtils.updateImageTexture(node, path, status)
+    if not string.isValid(path) then return end
+
+    local resType = UIUtils.getTextureResType(path)
+    if iskindof(node, "cc.Sprite") then
+        if resType == ccui.TextureResType.localType then
+            node:setTexture(path)
+        else
+            node:setSpriteFrame(path)
+        end
+    elseif iskindof(node, "ccui.ImageView") or iskindof(node, "ccui.Sprite9Scale") then
+        node:loadTexture(path, resType)
+    elseif iskindof(node, "ccui.Button") then
+        if status == "normal" then
+            node:loadTextureNormal(path, resType)
+        else
+            node:loadTexturePressed(path, resType)
+        end
+    end
+end
+
 local __debugNodeIncrementalRGB = 1
 function UIUtils.debug(target, isCascade)
     __debugNodeIncrementalRGB = (__debugNodeIncrementalRGB * 43897) % 0xffffff

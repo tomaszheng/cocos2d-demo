@@ -202,6 +202,11 @@ function Node:onUpdate(callback)
     return self
 end
 
+function Node:unUpdate()
+    self:unscheduleUpdate()
+    return self
+end
+
 function Node:getBoundingBoxToWorld()
     local cascadeScale = self:getNodeToWorldTransform()[1]
     local size, anchor, scale = self:getContentSize(), self:getAnchorPoint(), self:getScale()

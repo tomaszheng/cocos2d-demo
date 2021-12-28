@@ -9,6 +9,7 @@ local Brightness = require("src.components.shaders.Brightness")
 local Ripple = require("src.components.shaders.Ripple")
 local Clickable = require("src.components.touch.Clickable")
 local Touchable = require("src.components.touch.Touchable")
+local TouchConstants = require("src.components.touch.TouchConstants")
 local Draggable = require("src.components.touch.Draggable")
 local ShaderTest = class("ShaderTest", BaseNode)
 
@@ -106,12 +107,18 @@ function ShaderTest:testRipple()
     })
 
     avatar:addLuaComponent(Clickable, {
+        style = TouchConstants.STYLES.SCALE,
+        scale = 1.1,
         onClick = function(event)
             local p = event.sender.node:convertToNodeSpace(event.position)
             avatar:getLuaComponent(Ripple):start(p)
         end
     })
     avatar:addLuaComponent(Draggable, {
+        isMoveLimit = true,
+        moveThreshold = 20,
+        startFollowEnabled = true,
+        moveFollowEnabled = true,
         reboundEnabled = true
     })
 end

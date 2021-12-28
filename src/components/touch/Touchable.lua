@@ -4,14 +4,8 @@
 --- DateTime: 2021/12/13 18:20
 --- Content: 触摸组件
 ---
+local TouchConstants = require("src.components.touch.TouchConstants")
 local Touchable = class("Touchable", BaseComponent)
-
-Touchable.ON_BEGAN = "on-began"
-Touchable.ON_MOVED = "on-moved"
-Touchable.ON_ENDED = "on-ended"
-Touchable.ON_CANCELED = "on-canceled"
-Touchable.ON_LONG_TOUCH = "on-long-touch"
-Touchable.ON_DESTROY = "on-destroy"
 
 function Touchable:ctor(node, data)
     cc.load("event").new():bind(self)
@@ -59,7 +53,6 @@ function Touchable:onTouchBegan(touch)
     local position = touch:getLocation()
 
     if not self._isEnabled then return false end
-    if not self._isCurrTouchEnabled then return false end
     if self._onLimitFunc and not doCallback(self._onLimitFunc, position) then
         return false
     end
@@ -69,7 +62,7 @@ function Touchable:onTouchBegan(touch)
     self._touchCurrPosition = position
     self._isCurrTouchEnabled = true
     if isHit then
-        self:dispatchEvent({name = Touchable.ON_BEGAN, sender = self, position = position})
+        self:dispatchEvent({name = TouchConstants.ON_BEGAN, sender = self, position = position})
         doCallback(self._onBeganFunc, {sender = self, position = position})
         self:startLongTouchTimer()
     end
@@ -81,7 +74,7 @@ function Touchable:onTouchMoved(touch)
 
     local position = touch:getLocation()
     self._touchCurrPosition = position
-    self:dispatchEvent({name = Touchable.ON_MOVED, sender = self, position = position})
+    self:dispatchEvent({name = TouchConstants.ON_MOVED, sender = self, position = position})
     doCallback(self._onMovedFunc, {sender = self, position = position})
     return true
 end
@@ -94,7 +87,7 @@ function Touchable:onTouchEnded(touch)
     local position = touch:getLocation()
     local isHit = self:isHit(position)
     self._touchCurrPosition = position
-    self:dispatchEvent({name = Touchable.ON_ENDED, sender = self, position = position, isHit = isHit})
+    self:dispatchEvent({name = TouchConstants.ON_ENDED, sender = self, position = position, isHit = isHit})
     doCallback(self._onEndedFunc, {sender = self, position = position, isHit = isHit})
     return true
 end
@@ -104,7 +97,7 @@ function Touchable:onTouchCanceled()
 
     self:stopLongTouchTimer()
 
-    self:dispatchEvent({name = Touchable.ON_CANCELED, sender = self})
+    self:dispatchEvent({name = TouchConstants.ON_CANCELED, sender = self})
     doCallback(self._onCanceledFunc, {sender = self})
     return true
 end
@@ -125,9 +118,11 @@ function Touchable:stopLongTouchTimer()
 end
 
 function Touchable:onLongTouch()
+    if not self._isCurrTouchEnabled then return false end
+
     local position = self._touchCurrPosition
     local isHit = self:isHit(position)
-    self:dispatchEvent({name = Touchable.ON_LONG_TOUCH, sender = self, isHit = isHit, position = position})
+    self:dispatchEvent({name = TouchConstants.ON_LONG_TOUCH, sender = self, isHit = isHit, position = position})
     doCallback(self._onLongTouchFunc, {sender = self, isHit = isHit, position = position})
     return true
 end
@@ -159,6 +154,12 @@ end
 function Touchable:setLongTouchThreshold(threshold)
     if type(threshold) == "number" then
         self._longTouchThreshold = threshold
+    end
+end
+
+function Touchable:setLimitFunc(func)
+    if func and type(func) == "function" then
+        self._onLimitFunc = func
     end
 end
 
@@ -197,7 +198,7 @@ end
 function Touchable:onDestroy()
     self.node:removeTouchListener(self._touchListenerId)
     self:stopLongTouchTimer()
-    self:dispatchEvent({name = Touchable.ON_DESTROY})
+    self:dispatchEvent({name = TouchConstants.ON_DESTROY})
 end
 
 return Touchable
