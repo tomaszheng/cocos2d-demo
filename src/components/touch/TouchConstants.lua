@@ -30,7 +30,7 @@ TouchConstants.STATUS = {
     PRESSED = 'pressed'
 }
 
-TouchConstants.ANCHOR_TYPES = {
+TouchConstants.DRAG_ALIGN_TYPES = {
     CENTER          = "center",
     LEFT_TOP        = "left_top",
     LEFT_BOTTOM     = "left_bottom",
@@ -38,9 +38,21 @@ TouchConstants.ANCHOR_TYPES = {
     RIGHT_TOP       = "right_top",
     RIGHT_BOTTOM    = "right_bottom",
     RIGHT_CENTER    = "right_center",
-    TOP_CENTER      = "top_center",
+    CENTER_TOP      = "center_top",
     CENTER_BOTTOM   = "center_bottom",
     CUSTOM          = "custom",
+}
+
+TouchConstants.DRAG_ALIGN_ANCHOR = {
+    [TouchConstants.DRAG_ALIGN_TYPES.CENTER]         = cc.p(0.5, 0.5),
+    [TouchConstants.DRAG_ALIGN_TYPES.LEFT_TOP]       = cc.p(0, 1),
+    [TouchConstants.DRAG_ALIGN_TYPES.LEFT_BOTTOM]    = cc.p(0, 0),
+    [TouchConstants.DRAG_ALIGN_TYPES.LEFT_CENTER]    = cc.p(0, 0.5),
+    [TouchConstants.DRAG_ALIGN_TYPES.RIGHT_TOP]      = cc.p(1, 1),
+    [TouchConstants.DRAG_ALIGN_TYPES.RIGHT_BOTTOM]   = cc.p(1, 0),
+    [TouchConstants.DRAG_ALIGN_TYPES.RIGHT_CENTER]   = cc.p(1, 0.5),
+    [TouchConstants.DRAG_ALIGN_TYPES.CENTER_TOP]     = cc.p(0.5, 1),
+    [TouchConstants.DRAG_ALIGN_TYPES.CENTER_BOTTOM]  = cc.p(0.5, 0),
 }
 
 return TouchConstants

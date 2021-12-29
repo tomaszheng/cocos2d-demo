@@ -115,6 +115,7 @@ function ShaderTest:testRipple()
         end
     })
     avatar:addLuaComponent(Draggable, {
+        alignType = TouchConstants.DRAG_ALIGN_TYPES.CENTER_BOTTOM,
         isMoveLimit = true,
         moveThreshold = 20,
         startFollowEnabled = true,
