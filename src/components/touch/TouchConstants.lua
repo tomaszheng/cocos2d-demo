@@ -13,14 +13,14 @@ TouchConstants.ON_LONG_TOUCH = "on-long-touch"
 TouchConstants.ON_CLICK = "on-click"
 TouchConstants.ON_DESTROY = "on-destroy"
 
-TouchConstants.STYLES = {
+TouchConstants.INTERACTION_STYLES = {
     NONE    = 'none',
     COLOR   = 'color',
     SCALE   = 'scale',
     IMAGE   = 'image'
 }
 
-TouchConstants.TYPES = {
+TouchConstants.RESPOND_TYPES = {
     CLICK = 'click',
     LONG_TOUCH = 'long-touch'
 }

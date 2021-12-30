@@ -6,6 +6,8 @@
 local TouchConstants = require("src.components.touch.TouchConstants")
 local Interactive = class("Interactive", BaseComponent)
 
+Interactive.MULTI_ENABLED = true
+
 function Interactive:ctor(node, data)
     Interactive.super.ctor(self, node, data)
     self:initData(data)
@@ -13,10 +15,8 @@ end
 
 function Interactive:initData(data)
     data = data or {}
-    -- 响应类型
-    self._type = data.type or TouchConstants.TYPES.CLICK
-    -- 按下效果
-    self._style = data.style or TouchConstants.STYLES.NONE
+    -- 交互效果
+    self._style = data.interactionStyle or TouchConstants.INTERACTION_STYLES.NONE
     -- 按下缩放系数
     self._scale = data.scale or 1.1
     -- 按下换颜色
@@ -24,42 +24,45 @@ function Interactive:initData(data)
     -- 按下换图片, key是Clickable.STATUS
     self._images = data.images or {}
     -- 自定义交互方法(在按下/抬起手指时触发)
-    self._interactionFunc = data.interaction
+    self._onInteractiveFunc = data.onInteractive
 
     self._interactionAction = nil
+    self._isInteractiveStarted = false
 
     self._nodeOriginalScale = self.node:getScale()
     self._nodeOriginalColor = self.node:getColor()
 end
 
 function Interactive:press(position)
+    self._isInteractiveStarted = true
     self:restoreNode()
     self:stopInteractionAction()
-    if self._style == TouchConstants.STYLES.COLOR then
+    if self._style == TouchConstants.INTERACTION_STYLES.COLOR then
         self.node:setColor(self._color)
-    elseif self._style == TouchConstants.STYLES.SCALE then
+    elseif self._style == TouchConstants.INTERACTION_STYLES.SCALE then
         self._interactionAction = self.node:runAction(cc.EaseSineOut:create(cc.ScaleTo:create(0.15, self._nodeOriginalScale * self._scale)))
-    elseif self._style == TouchConstants.STYLES.IMAGE then
+    elseif self._style == TouchConstants.INTERACTION_STYLES.IMAGE then
         UIUtils.updateImageTexture(self.node, self._images[TouchConstants.STATUS.PRESSED], TouchConstants.STATUS.PRESSED)
     else
-        doCallback(self._interactionFunc, TouchConstants.STATUS.PRESSED, position)
+        doCallback(self._onInteractiveFunc, TouchConstants.STATUS.PRESSED, position)
     end
 end
 
 function Interactive:loosen()
+    self._isInteractiveStarted = false
     self:restoreNode()
 end
 
 function Interactive:restoreNode()
     self:stopInteractionAction()
-    if self._style == TouchConstants.STYLES.COLOR then
+    if self._style == TouchConstants.INTERACTION_STYLES.COLOR then
         self.node:setColor(self._nodeOriginalColor)
-    elseif self._style == TouchConstants.STYLES.SCALE then
+    elseif self._style == TouchConstants.INTERACTION_STYLES.SCALE then
         self._interactionAction = self.node:runAction(cc.EaseSineOut:create(cc.ScaleTo:create(0.15, self._nodeOriginalScale)))
-    elseif self._style == TouchConstants.STYLES.IMAGE then
+    elseif self._style == TouchConstants.INTERACTION_STYLES.IMAGE then
         UIUtils.updateImageTexture(self.node, self._images[TouchConstants.STATUS.NORMAL], TouchConstants.STATUS.NORMAL)
     else
-        doCallback(self._interactionFunc, TouchConstants.STATUS.NORMAL)
+        doCallback(self._onInteractiveFunc, TouchConstants.STATUS.NORMAL)
     end
 end
 
@@ -70,10 +73,14 @@ function Interactive:stopInteractionAction()
     self._interactionAction = nil
 end
 
-function Interactive:setInteractionFunc(func)
+function Interactive:setOnInteraction(func)
     if func and type(func) == "function" then
-        self._interactionFunc = func
+        self._onInteractiveFunc = func
     end
+end
+
+function Interactive:isInteractiveStarted()
+    return self._isInteractiveStarted
 end
 
 function Interactive:updateOriginalData()

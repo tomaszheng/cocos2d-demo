@@ -6,7 +6,10 @@
 ---
 local Touchable = require("src.components.touch.Touchable")
 local Dragging = require("src.components.touch.Dragging")
+local Interactive = require("src.components.touch.Interactive")
 local Draggable = class("Draggable", Touchable)
+
+local INTERACTIVE_ID = "DRAGGABLE"
 
 function Draggable:ctor(node, data)
     Draggable.super.ctor(self, node, data)
@@ -18,10 +21,13 @@ function Draggable:initData(data)
     -- 拖拽移动时的响应限制函数
     self._onDragLimitFunc = data.onDragLimit
     -- 拖拽是否有位移限制
-    self._isMoveLimit = data.isMoveLimit or false
+    self._isMoveLimitEnabled = data.moveLimitEnabled or false
     self._moveThreshold = data.moveThreshold or 5
 
     self._dragging = self.node:addLuaComponent(Dragging, data)
+
+    self._interactive = self.node:addLuaComponent(Interactive, data)
+    self._interactive:setId(INTERACTIVE_ID)
 
     self._isDragEnabled = true
     self._isCurrMoveTooShort = true
@@ -45,7 +51,23 @@ function Draggable:onTouchMoved(touch)
 
     if self:isDragLimiting() then return false end
 
+    if not self._interactive:isInteractiveStarted() then
+        self._interactive:press(self._touchCurrPosition)
+    end
     self._dragging:drag(self._touchCurrPosition)
+
+    return true
+end
+
+function Draggable:onLongTouch()
+    if not self._isCurrTouchEnabled then return false end
+
+    if not self._interactive:isInteractiveStarted() then
+        self._interactive:press(self._touchCurrPosition)
+    end
+    if not self:isLongTouchLimiting() then
+        self._dragging:drag(self._touchCurrPosition)
+    end
 
     return true
 end
@@ -53,17 +75,19 @@ end
 function Draggable:onTouchEnded(touch)
     if not Draggable.super.onTouchEnded(self, touch) then return false end
     self._dragging:ended()
+    self._interactive:loosen()
     return true
 end
 
 function Draggable:onTouchCanceled()
     if not Draggable.super.onTouchCanceled(self) then return false end
     self._dragging:ended()
+    self._interactive:loosen()
     return true
 end
 
 function Draggable:isDragLimiting()
-    if self._isMoveLimit then
+    if self._isMoveLimitEnabled then
         if not self._isCurrMoveTooShort then
             return false
         else
@@ -80,6 +104,13 @@ function Draggable:isDragLimiting()
     return true
 end
 
+function Draggable:isLongTouchLimiting()
+    if self._onDragLimitFunc then
+        return doCallback(self._onDragLimitFunc, self._touchCurrPosition)
+    end
+    return false
+end
+
 function Draggable:setDragEnabled(enabled)
     self._isDragEnabled = enabled
 end
@@ -90,6 +121,11 @@ end
 
 function Draggable:isDragCompleted()
     return self._dragging:isDragCompleted()
+end
+
+function Draggable:onDestroy()
+    Draggable.super.onDestroy(self)
+    self.node:removeLuaComponentById(INTERACTIVE_ID)
 end
 
 return Draggable

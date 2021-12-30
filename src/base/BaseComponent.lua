@@ -1,5 +1,7 @@
 local BaseComponent = class('BaseComponent')
 
+BaseComponent.MULTI_ENABLED = false
+
 function BaseComponent:ctor(node, data)
     self.node = node
     self.data = data
@@ -12,7 +14,7 @@ function BaseComponent:setId(id)
 end
 
 function BaseComponent:getId()
-    return self._id and self._id or self.node.__cname
+    return self._id or self.node.__cname
 end
 
 function BaseComponent:onDestroy()

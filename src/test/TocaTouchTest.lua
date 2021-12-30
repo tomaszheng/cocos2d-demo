@@ -28,7 +28,7 @@ function TocaTouchTest:testTouchable()
 
     local offsetY = 50
     avatar:addLuaComponent(Touchable, {
-        isLongTouchEnabled = true,
+        longTouchEnabled = true,
         longTouchThreshold = 0.6,
         onBegan = function(event)
             printLog("TestTouchable", "x=%.2f, y=%.2f", event.position.x, event.position.y)
@@ -59,8 +59,8 @@ function TocaTouchTest:testClickable()
     local offsetY = 50
     local interactionAction
     avatar:addLuaComponent(Clickable, {
-        type = TouchConstants.TYPES.LONG_TOUCH,
-        isMoveLimit = true,
+        type = TouchConstants.RESPOND_TYPES.LONG_TOUCH,
+        moveLimitEnabled = true,
         moveThreshold = 10,
         onBegan = function(event)
             printLog("TestTouchable - onBegan", "x=%.2f, y=%.2f", event.position.x, event.position.y)

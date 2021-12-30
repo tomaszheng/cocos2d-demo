@@ -9,6 +9,8 @@ local Interactive = require("src.components.touch.Interactive")
 local TouchConstants = require("src.components.touch.TouchConstants")
 local Clickable = class("Clickable", Touchable)
 
+local INTERACTIVE_ID = "CLICKABLE"
+
 function Clickable:ctor(node, data)
     Clickable.super.ctor(self, node, data)
 end
@@ -17,19 +19,18 @@ function Clickable:initData(data)
     Clickable.super.initData(self, data)
     data = data or {}
     -- 响应类型
-    self._type = data.type or TouchConstants.TYPES.CLICK
+    self._type = data.respondType or TouchConstants.RESPOND_TYPES.CLICK
     -- 按下有位移，是否可以响应
     self._isMoveLimit = data.isMoveLimit or false
     self._moveThreshold = data.moveThreshold or 5
     -- 两次按下是否有时间间隔限制
     self._isIntervalLimit = data.isIntervalLimit or false
     self._intervalThreshold = data.intervalThreshold or 0.5
-    -- 长按
-    self._isLongTouchEnabled = self._type == TouchConstants.TYPES.LONG_TOUCH
     -- 点击响应回调
     self._onClickFunc = data.onClick
 
     self._interactive = self.node:addLuaComponent(Interactive, data)
+    self._interactive:setId(INTERACTIVE_ID)
 
     -- 当前此touch是否是有效点击
     self._isCurrTouchValid = false
@@ -66,7 +67,7 @@ function Clickable:trigger(name, func, position)
 end
 
 function Clickable:onTouchEnded(touch)
-    if self._type == TouchConstants.TYPES.CLICK then
+    if self._type == TouchConstants.RESPOND_TYPES.CLICK then
         self._interactive:loosen()
     end
     self:stopLongTouchTimer()
@@ -74,7 +75,7 @@ function Clickable:onTouchEnded(touch)
 
     local position = touch:getLocation()
     self._touchCurrPosition = position
-    if self._type == TouchConstants.TYPES.CLICK then
+    if self._type == TouchConstants.RESPOND_TYPES.CLICK then
         if self:isHit(position) and not self:isClickLimiting() then
             self:trigger(TouchConstants.ON_CLICK, self._onClickFunc, position)
         end
@@ -118,6 +119,11 @@ end
 
 function Clickable:updateOriginalData()
     self._interactive:updateOriginalData()
+end
+
+function Clickable:onDestroy()
+    Clickable.super.onDestroy(self)
+    self.node:removeLuaComponentById(INTERACTIVE_ID)
 end
 
 return Clickable

@@ -8,51 +8,91 @@ local Node = cc.Node
 ---添加组件
 ---@param component component
 function Node:addLuaComponent(component, data)
-    self._luaComponents = self._luaComponents or {}
     local cname = component.__cname
-    if not self._luaComponents[cname] then
-        self._luaComponents[cname] = component.new(self, data)
+    self._luaComponents = self._luaComponents or {}
+    self._luaComponents[cname] = self._luaComponents[cname] or {}
+    local instance = self._luaComponents[cname][1]
+    if not instance or component.MULTI_ENABLED then
+        instance = component.new(self, data)
+        table.insert(self._luaComponents[cname], instance)
         self:enableNodeEvents()
     end
-    return self._luaComponents[cname]
+    return instance
 end
 
 ---获取组件
 ---@param component component
 ---@return component
 function Node:getLuaComponent(component)
-    self._luaComponents = self._luaComponents or {}
     local cname = type(component) == "string" and component or component.__cname
-    if self._luaComponents[cname] then
-        return self._luaComponents[cname]
+    self._luaComponents = self._luaComponents or {}
+    self._luaComponents[cname] = self._luaComponents[cname] or {}
+    if #self._luaComponents[cname] > 0 then
+        return self._luaComponents[cname][1]
     else
         -- 用基类可以获取子类
-        for _, value in pairs(self._luaComponents) do
-            if iskindof(rawget(value, "class"), cname) then
-                return value
+        for _, components in pairs(self._luaComponents) do
+            for _, instance in pairs(components) do
+                if iskindof(rawget(instance, "class"), cname) then
+                    return instance
+                end
             end
         end
     end
-    return self._luaComponents[cname]
+end
+
+function Node:getLuaComponentById(componentId)
+    self._luaComponents = self._luaComponents or {}
+    for _, components in pairs(self._luaComponents) do
+        for _, instance in pairs(components) do
+            if instance:getId() == componentId then
+                return instance
+            end
+        end
+    end
 end
 
 ---移除组件
 ---@param component component
 function Node:removeLuaComponent(component)
-    self._luaComponents = self._luaComponents or {}
     local cname = type(component) == "string" and component or component.__cname
-    if self._luaComponents[cname] then
-        self._luaComponents[cname]:destroy()
-        self._luaComponents[cname] = nil
+    self._luaComponents = self._luaComponents or {}
+    self._luaComponents[cname] = self._luaComponents[cname] or {}
+    if #self._luaComponents[cname] > 0 then
+        self._luaComponents[cname][1]:destroy()
+        table.remove(self._luaComponents[cname], 1)
+    end
+end
+
+function Node:removeLuaComponents(component)
+    local cname = type(component) == "string" and component or component.__cname
+    self._luaComponents = self._luaComponents or {}
+    self._luaComponents[cname] = self._luaComponents[cname] or {}
+    for _, instance in pairs(self._luaComponents[cname]) do
+        instance:destroy()
+    end
+    self._luaComponents[cname] = {}
+end
+
+function Node:removeLuaComponentById(componentId)
+    self._luaComponents = self._luaComponents or {}
+    for _, components in pairs(self._luaComponents) do
+        for index, instance in pairs(components) do
+            if instance:getId() == componentId then
+                instance:destroy()
+                table.remove(components, index)
+                return
+            end
+        end
     end
 end
 
 function Node:removeAllLuaComponents()
     self._luaComponents = self._luaComponents or {}
-    if type(self._luaComponents) == "table" then
-        for _, component in pairs(self._luaComponents) do
-            component:destroy()
+    for _, components in pairs(self._luaComponents) do
+        for _, instance in pairs(components) do
+            instance:destroy()
         end
-        self._luaComponents = {}
     end
+    self._luaComponents = {}
 end

@@ -19,7 +19,7 @@ function Touchable:initData(data)
     -- 响应的区域
     self._shape = data.shape or {}
     -- 是否启用长按
-    self._isLongTouchEnabled = data.isLongTouchEnabled or false
+    self._isLongTouchEnabled = data.longTouchEnabled or false
     -- 触发长按的时间阈值
     self._longTouchThreshold = data.longTouchThreshold or 0.5
     -- touch的各个阶段
