@@ -101,7 +101,7 @@ function Draggable:isDragLimiting()
     if self._onDragLimitFunc then
         return doCallback(self._onDragLimitFunc, self._touchCurrPosition)
     end
-    return true
+    return false
 end
 
 function Draggable:isLongTouchLimiting()

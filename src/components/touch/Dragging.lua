@@ -28,14 +28,16 @@ function Dragging:initData(data)
     -- 拖拽响应函数
     self._onMoveFunc = data.onMove
     self._onFollowFunc = data.onStartFollow
+    -- 拖动的目标
+    self._target = data.target or self.node
 
     -- node数据
-    self._nodeOriginalAnchor = cc.p(0, 0)
-    self._nodeOriginalSize = cc.size(0, 0)
-    self._nodeOriginalPosition = cc.p(0, 0)
-    self._isNodeOriginalSaved = false
+    self._targetOriginalAnchor = cc.p(0, 0)
+    self._targetOriginalSize = cc.size(0, 0)
+    self._targetOriginalPosition = cc.p(0, 0)
+    self._isTargetOriginalSaved = false
 
-    self._nodeCurrPosition = cc.p(0, 0)
+    self._targetCurrPosition = cc.p(0, 0)
 
     self._isDragging = false
     self._isStartFollowed = false
@@ -48,22 +50,22 @@ function Dragging:initData(data)
 end
 
 function Dragging:begin(position)
-    if not self._isNodeOriginalSaved then
+    if not self._isTargetOriginalSaved or not self._reboundEnabled then
         self:updateOriginalData()
     end
-    self._nodeCurrPosition = cc.p(self._nodeOriginalPosition.x, self._nodeOriginalPosition.y)
+    self._targetCurrPosition = cc.p(self._targetOriginalPosition.x, self._targetOriginalPosition.y)
     self._currAlignAnchor = self:getCurrAlignAnchor(position)
     self._isStartFollowed = false
     self._isDragging = true
 end
 
 function Dragging:getCurrAlignAnchor(position)
-    position = self.node:convertToNodeSpace(position)
+    position = self._target:convertToNodeSpace(position)
     if self._alignType == TouchConstants.DRAG_ALIGN_TYPES.CUSTOM then
         if self._alignAnchor then
             return self._alignAnchor
         else
-            return cc.p(position.x / self._nodeOriginalSize.width, position.y / self._nodeOriginalSize.height)
+            return cc.p(position.x / self._targetOriginalSize.width, position.y / self._targetOriginalSize.height)
         end
     else
         return TouchConstants.DRAG_ALIGN_ANCHOR[self._alignType]
@@ -71,15 +73,15 @@ function Dragging:getCurrAlignAnchor(position)
 end
 
 function Dragging:drag(position)
-    position = self.node:getParent():convertToNodeSpace(position)
-    local size = self.node:getRealSize()
-    local offX = size.width * (self._nodeOriginalAnchor.x - self._currAlignAnchor.x)
-    local offY = size.height * (self._nodeOriginalAnchor.y - self._currAlignAnchor.y)
+    position = self._target:getParent():convertToNodeSpace(position)
+    local size = self._target:getRealSize()
+    local offX = size.width * (self._targetOriginalAnchor.x - self._currAlignAnchor.x)
+    local offY = size.height * (self._targetOriginalAnchor.y - self._currAlignAnchor.y)
 
     self._dstPosition.x = position.x + offX
     self._dstPosition.y = position.y + offY
-    self._followSpeed.x = (self._dstPosition.x - self._nodeCurrPosition.x) / DEFAULT_FOLLOW_FRAME
-    self._followSpeed.y = (self._dstPosition.y - self._nodeCurrPosition.y) / DEFAULT_FOLLOW_FRAME
+    self._followSpeed.x = (self._dstPosition.x - self._targetCurrPosition.x) / DEFAULT_FOLLOW_FRAME
+    self._followSpeed.y = (self._dstPosition.y - self._targetCurrPosition.y) / DEFAULT_FOLLOW_FRAME
     self._followSpeed.x = self:standardizing(self._followSpeed.x)
     self._followSpeed.y = self:standardizing(self._followSpeed.y)
 
@@ -94,18 +96,18 @@ function Dragging:move()
     if self._isStartFollowEnabled and not self._isStartFollowed then
         if self._onFollowFunc then
             self._isStartFollowed = doCallback(self._onFollowFunc, self._dstPosition)
-            self._nodeCurrPosition = cc.p(self.node:getPosition())
+            self._targetCurrPosition = cc.p(self._target:getPosition())
         else
             self:follow()
         end
     elseif self._onMoveFunc then
         doCallback(self._onMoveFunc, self._dstPosition)
-        self._nodeCurrPosition = cc.p(self.node:getPosition())
+        self._targetCurrPosition = cc.p(self._target:getPosition())
     elseif self._isMoveFollowEnabled then
         self:follow()
     else
-        self.node:move(self._dstPosition)
-        self._nodeCurrPosition.x, self._nodeCurrPosition.y = self._dstPosition.x, self._dstPosition.y
+        self._target:move(self._dstPosition)
+        self._targetCurrPosition.x, self._targetCurrPosition.y = self._dstPosition.x, self._dstPosition.y
     end
 end
 
@@ -118,13 +120,13 @@ end
 function Dragging:follow()
     if not self._isFollowing then
         self._isFollowing = true
-        self.node:onUpdate(handler(self, self.doFollow))
+        self._target:onUpdate(handler(self, self.doFollow))
     end
 end
 
 function Dragging:doFollow()
-    local x = self._nodeCurrPosition.x + self._followSpeed.x
-    local y = self._nodeCurrPosition.y + self._followSpeed.y
+    local x = self._targetCurrPosition.x + self._followSpeed.x
+    local y = self._targetCurrPosition.y + self._followSpeed.y
     local followedN = 0
     if math.abs(x - self._dstPosition.x) <= 1 then
         x, followedN = self._dstPosition.x, followedN + 1
@@ -132,8 +134,8 @@ function Dragging:doFollow()
     if math.abs(y - self._dstPosition.y) <= 1 then
         y, followedN = self._dstPosition.y, followedN + 1
     end
-    self.node:move(x, y)
-    self._nodeCurrPosition.x, self._nodeCurrPosition.y = x, y
+    self._target:move(x, y)
+    self._targetCurrPosition.x, self._targetCurrPosition.y = x, y
     if followedN == 2 then
         self:stopFollow()
     end
@@ -144,7 +146,7 @@ function Dragging:stopFollow()
         self._isStartFollowed = true
     end
     self._isFollowing = false
-    self.node:unUpdate()
+    self._target:unUpdate()
 end
 
 function Dragging:rebound()
@@ -160,8 +162,8 @@ end
 
 function Dragging:doRebound()
     self._isRebounding = true
-    self._reboundAction = self.node:runAction(cc.Sequence:create(
-            cc.MoveTo:create(0.5, self._nodeOriginalPosition),
+    self._reboundAction = self._target:runAction(cc.Sequence:create(
+            cc.MoveTo:create(0.5, self._targetOriginalPosition),
             cc.CallFunc:create(function()
                 self._reboundAction = nil
                 self._isRebounding = false
@@ -171,7 +173,7 @@ end
 
 function Dragging:stopRebound()
     if self._reboundAction then
-        self.node:stopAction(self._reboundAction)
+        self._target:stopAction(self._reboundAction)
     end
     self._reboundAction = nil
     self._isRebounding = false
@@ -186,10 +188,10 @@ function Dragging:isDragCompleted()
 end
 
 function Dragging:updateOriginalData()
-    self._nodeOriginalAnchor = self.node:getAnchorPoint()
-    self._nodeOriginalSize = self.node:getContentSize()
-    self._nodeOriginalPosition = cc.p(self.node:getPosition())
-    self._isNodeOriginalSaved = true
+    self._targetOriginalAnchor = self._target:getAnchorPoint()
+    self._targetOriginalSize = self._target:getContentSize()
+    self._targetOriginalPosition = cc.p(self._target:getPosition())
+    self._isTargetOriginalSaved = true
 end
 
 function Dragging:onDestroy()
