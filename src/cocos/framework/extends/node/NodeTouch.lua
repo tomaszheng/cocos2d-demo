@@ -13,6 +13,7 @@ function Node:addTouchListener(options)
 
     self:addTouchListener_()
 
+    self.touchCallbacks_ = self.touchCallbacks_ or {}
     self.touchCallbacks_[__listenerId__] = {
         onBegan = options.onBegan, onMoved = options.onMoved,
         onEnded = options.onEnded, onCanceled = options.onCanceled,
@@ -24,8 +25,6 @@ end
 
 function Node:addTouchListener_()
     if self.listener_ and type(self.listener_) == "userdata" then return end
-
-    self.touchCallbacks_ = {}
 
     local listener = cc.EventListenerTouchOneByOne:create()
     listener:registerScriptHandler(handler(self, self.onTouchBegan_), cc.Handler.EVENT_TOUCH_BEGAN)
@@ -39,10 +38,12 @@ function Node:addTouchListener_()
 end
 
 function Node:onTouchBegan_(touch)
+    local isValid = false
     table.walk(self.touchCallbacks_, function(callbacks)
         callbacks.isValid = doCallback(callbacks.onBegan, touch)
+        isValid = isValid or callbacks.isValid
     end)
-    return true
+    return isValid
 end
 
 function Node:onTouchMoved_(touch)

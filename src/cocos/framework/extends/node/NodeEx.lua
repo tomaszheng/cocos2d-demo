@@ -132,7 +132,7 @@ function Node:getSize()
 end
 
 function Node:getRealSize()
-    local size = self:getSize()
+    local size = self:getContentSize()
     return cc.size(size.width * self:getScaleX(), size.height * self:getScaleY())
 end
 
