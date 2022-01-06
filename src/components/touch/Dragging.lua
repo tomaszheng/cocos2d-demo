@@ -106,9 +106,13 @@ function Dragging:move()
     elseif self._isMoveFollowEnabled then
         self:follow()
     else
-        self._target:move(self._dstPosition)
+        self:setPosition(self._dstPosition)
         self._targetCurrPosition.x, self._targetCurrPosition.y = self._dstPosition.x, self._dstPosition.y
     end
+end
+
+function Dragging:setPosition(pos)
+    self._target:move(pos)
 end
 
 function Dragging:ended()
@@ -127,18 +131,25 @@ end
 function Dragging:doFollow()
     local x = self._targetCurrPosition.x + self._followSpeed.x
     local y = self._targetCurrPosition.y + self._followSpeed.y
-    local followedN = 0
     if math.abs(x - self._dstPosition.x) <= 1 then
-        x, followedN = self._dstPosition.x, followedN + 1
+        x = self._dstPosition.x
     end
     if math.abs(y - self._dstPosition.y) <= 1 then
-        y, followedN = self._dstPosition.y, followedN + 1
+        y = self._dstPosition.y
     end
-    self._target:move(x, y)
+    self:setPosition(cc.p(x, y))
     self._targetCurrPosition.x, self._targetCurrPosition.y = x, y
-    if followedN == 2 then
+    if self:isFollowed() then
         self:stopFollow()
     end
+end
+
+function Dragging:isFollowed()
+    if math.abs(self._targetCurrPosition.x - self._dstPosition.x) < 1 or
+            math.abs(self._targetCurrPosition.y - self._dstPosition.y) < 1 then
+        return true
+    end
+    return false
 end
 
 function Dragging:stopFollow()
